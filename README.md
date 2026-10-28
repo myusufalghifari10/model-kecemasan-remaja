@@ -42,10 +42,31 @@ berisiko tinggi.
 - **Produksi** — 6 model (satu per ulangan), jawaban dirata-ratakan. Konfigurasi ini persis
   yang diukur, jadi 0,2165 berlaku untuk artefak yang dikirim.
 
+## Label kemungkinan stress
+
+`--mode predict` menerima data siswa baru dan mengeluarkan `skor` + `status`:
+**Kemungkinan stress** bila skor > 2,5, selain itu **Tidak**.
+
+Ambang 2,5 mengikuti skema kategori pada analisis sebelumnya, dan skema itu dapat
+direproduksi persis dari data ini:
+
+| kategori | batas | n |
+|---|---|---|
+| Rendah | ≤ 1,75 | 115 |
+| Sedang | 1,75 – 2,50 | 153 |
+| Tinggi | 2,50 – 3,25 | 35 |
+| Sangat Tinggi | > 3,25 | 3 |
+
+Karena nilai tepat 2,50 masih masuk Sedang, "Tinggi" mulai **di atas** 2,5 → 38 siswa
+(12,4%). Batas ini dipakai apa adanya, jadi label diturunkan dari skor prediksi yang
+cenderung menaksir rendah di ekor: pada CV hanya 22 dari 43 siswa berisiko tinggi yang
+tertandai (sensitivitas 51%), dengan spesifisitas 94%. Label ini penanda awal, bukan
+penentuan status.
+
 ## Isi repo
 
 ```
-src/train.py            model + protokol evaluasi (5 mode)
+src/train.py            model + protokol evaluasi + inferensi (6 mode)
 src/config.py           nama kolom, path, seed
 outputs/model/cv.json   hasil CV populasi 306 (MAE, R², per bin)
 outputs/model/per_bin.csv
@@ -68,10 +89,16 @@ python src/train.py --mode self-test     # uji fungsi murni
 python src/train.py --mode cv            # CV 5x6 -> outputs/model/cv.json
 python src/train.py --mode test          # 238 -> 68 (konfirmasi)
 python src/train.py --mode final         # bag 6 model -> model_bag.joblib
+python src/train.py --mode predict --input siswa_baru.csv   # skor + label
 ```
 
-`--mode cv` dan `--mode final` membutuhkan `data/features.parquet` (306 × 89) yang tidak
-disertakan karena memuat jawaban per siswa.
+`--mode predict` membutuhkan CSV/parquet dengan 76 kolom input model (72 numerik + 4
+kategorikal) memakai nama kolom yang sama seperti `data/features.parquet`; kolom `row_id`
+opsional. Keluaran default `outputs/model/prediksi.csv`.
+
+`--mode cv` dan `--mode final` membutuhkan `data/features.parquet` (306 × 82: 76 kolom
+input → 88 setelah one-hot, plus target) yang tidak disertakan karena memuat jawaban per
+siswa.
 
 ## Catatan pembacaan
 
@@ -81,3 +108,5 @@ disertakan karena memuat jawaban per siswa.
   konfirmasi, bukan untuk memilih model atau parameter.
 - Bin 10 hanya 3 siswa (bin 9: 6, bin 8: 9). MAE per bin untuk bin dengan n ≤ 5 dilaporkan
   tetapi tidak boleh diranking.
+- Label "Kemungkinan stress" adalah binerisasi skor prediksi pada ambang 2,5, bukan model
+  klasifikasi tersendiri; performanya tidak dioptimalkan untuk keputusan itu.

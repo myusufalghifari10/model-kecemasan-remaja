@@ -1,6 +1,6 @@
 {
   "versi": "produksi_v1",
-  "dibuat": "2026-10-28T17:07:56",
+  "dibuat": "2026-10-28T17:18:10",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -21,6 +21,7 @@
   "artefak": "model_bag.joblib",
   "n_baris": 306,
   "n_fitur": 88,
+  "ambang_kemungkinan_stress": 2.5,
   "mae_cv_bag": 0.2165207355770155,
   "mae_cv_ci95": [
     0.19585796812217088,
