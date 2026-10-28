@@ -42,10 +42,13 @@ berisiko tinggi.
 - **Produksi** — 6 model (satu per ulangan), jawaban dirata-ratakan. Konfigurasi ini persis
   yang diukur, jadi 0,2165 berlaku untuk artefak yang dikirim.
 
-## Label kemungkinan stress
+## Prediksi, label, dan alasan (satu keluaran)
 
-`--mode predict` menerima data siswa baru dan mengeluarkan `skor` + `status`:
-**Kemungkinan stress** bila skor > 2,5, selain itu **Tidak**.
+`--mode predict` mengeluarkan tiga hal sekaligus, tanpa opsi tambahan:
+
+1. **skor** — taksiran skor kecemasan (skala 1–4), rata-rata bag 6 model;
+2. **status** — `Kemungkinan stress` bila skor > 2,5, selain itu `Tidak`;
+3. **fitur_1..n + kontribusi_1..n** — fitur yang paling mendorong skor itu (default 5).
 
 Ambang 2,5 mengikuti skema kategori pada analisis sebelumnya, dan skema itu dapat
 direproduksi persis dari data ini:
@@ -58,36 +61,31 @@ direproduksi persis dari data ini:
 | Sangat Tinggi | > 3,25 | 3 |
 
 Karena nilai tepat 2,50 masih masuk Sedang, "Tinggi" mulai **di atas** 2,5 → 38 siswa
-(12,4%). Batas ini dipakai apa adanya, jadi label diturunkan dari skor prediksi yang
-cenderung menaksir rendah di ekor: pada CV hanya 22 dari 43 siswa berisiko tinggi yang
-tertandai (sensitivitas 51%), dengan spesifisitas 94%. Label ini penanda awal, bukan
-penentuan status.
+(12,4%). Pada CV, aturan ini menangkap 22 dari 43 siswa berisiko tinggi (sensitivitas 51%,
+spesifisitas 94%); AUC skor itu sendiri 0,87, jadi titik operasi 2,5 dipakai apa adanya —
+bukan hasil optimasi. Label ini penanda awal, bukan penentuan status.
 
-## Penjelasan per siswa (SHAP)
+### Cara kontribusinya dihitung
 
-`--mode explain` menjawab "kenapa siswa ini ditandai": prediksi dipecah menjadi kontribusi
-tiap fitur. Karena model = `base + XGB` dan keduanya aditif:
+Model = `base + XGB`, dan keduanya aditif:
 
 - bagian **PLS** linier → kontribusi eksak `koefisien × nilai terstandardisasi`;
 - bagian **XGBoost** pada residual → TreeSHAP bawaan XGBoost (`pred_contribs`), tanpa
   library tambahan.
 
-Jumlah semua kontribusi + bias = skor prediksi persis (diperiksa setiap run, selisih
-~2e-07), dan kontribusi dirata-ratakan atas 6 model bag.
+Jumlah semua kontribusi + bias = skor yang dilaporkan (diperiksa setiap run, selisih
+~2e-07), dan kontribusinya dirata-ratakan atas 6 model bag. Kontribusi positif menaikkan
+skor, negatif menurunkan. Ini menjelaskan model, bukan sebab-akibat; fitur yang saling
+berkorelasi juga berbagi kredit secara arbitrer, jadi jangan menafsirkan selisih kecil
+antar item sebagai fakta.
 
-```bash
-python src/train.py --mode explain --input siswa_baru.csv          # 5 fitur teratas
-python src/train.py --mode explain --input siswa_baru.csv --top 10
-```
-
-Keluaran `outputs/model/prediksi_penjelasan.csv`: `row_id, skor, status, fitur_1..n,
-kontribusi_1..n`. Kontribusi positif menaikkan skor, negatif menurunkan. Ini menjelaskan
-model, bukan sebab-akibat.
+Keluaran `outputs/model/prediksi.csv`:
+`row_id, skor, status, fitur_1, kontribusi_1, …, fitur_n, kontribusi_n`.
 
 ## Isi repo
 
 ```
-src/train.py            model + protokol evaluasi + inferensi (7 mode)
+src/train.py            model + protokol evaluasi + inferensi (6 mode)
 src/config.py           nama kolom, path, seed
 outputs/model/cv.json   hasil CV populasi 306 (MAE, R², per bin)
 outputs/model/per_bin.csv
@@ -110,8 +108,7 @@ python src/train.py --mode self-test     # uji fungsi murni
 python src/train.py --mode cv            # CV 5x6 -> outputs/model/cv.json
 python src/train.py --mode test          # 238 -> 68 (konfirmasi)
 python src/train.py --mode final         # bag 6 model -> model_bag.joblib
-python src/train.py --mode predict --input siswa_baru.csv   # skor + label
-python src/train.py --mode explain --input siswa_baru.csv   # skor + label + fitur teratas
+python src/train.py --mode predict --input siswa_baru.csv   # skor + label + alasan
 ```
 
 `--mode predict` membutuhkan CSV/parquet dengan 76 kolom input model (72 numerik + 4

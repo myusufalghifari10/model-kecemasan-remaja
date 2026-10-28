@@ -27,7 +27,7 @@ Mode:
   --mode test        : latih 238 -> uji 68 -> test_<sha8>.json
   --mode final       : BAG 6 model di 306 -> model_bag.joblib + produksi.json
   --mode predict     : data siswa baru -> skor + label kemungkinan stress (skor > 2,5)
-  --mode explain     : data siswa baru -> skor + label + fitur paling berpengaruh (SHAP)
+                       beserta fitur yang paling mendorong skor itu (SHAP, selalu)
 Tanpa --mode hanya mencetak bantuan (tidak menjalankan apa pun).
 
 Urutan pemakaian:
@@ -37,7 +37,6 @@ Urutan pemakaian:
   python src/train.py --mode test
   python src/train.py --mode final
   python src/train.py --mode predict --input siswa_baru.csv
-  python src/train.py --mode explain --input siswa_baru.csv
 """
 from __future__ import annotations
 
@@ -606,65 +605,12 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
 
 # ---------------------------------------------------------------- predict (data baru)
 
-def run_predict(path_input: Path, path_output: Path | None = None) -> None:
-    """Terapkan bag 6 model pada data siswa baru: skor + label kemungkinan stress.
-
-    Input: CSV/parquet dengan kolom 88 fitur model (14 numerik + 4 kategorikal yang
-    di-one-hot). Kolom `row_id` opsional, hanya diteruskan ke keluaran.
-    """
-    if not MODEL_JOBLIB.exists():
-        _fail(f"{MODEL_JOBLIB.name} belum ada — jalankan --mode final dulu")
-    if not path_input.exists():
-        _fail(f"berkas input tidak ada: {path_input}")
-
-    art = joblib.load(MODEL_JOBLIB)
-    pre = art["preprocessor"]
-    baru = (pd.read_parquet(path_input) if path_input.suffix.lower() == ".parquet"
-            else pd.read_csv(path_input))
-    if len(baru) == 0:
-        _fail("input kosong")
-
-    wajib = pre["num"] + pre["cat"]
-    kurang = [c for c in wajib if c not in baru.columns]
-    if kurang:
-        _fail(f"{len(kurang)} kolom wajib tidak ada di input, mis. {kurang[:5]}")
-    kosong = [c for c in wajib if baru[c].isna().any()]
-    if kosong:
-        _fail(f"ada nilai kosong di kolom: {kosong[:5]}")
-
-    x = _transform(pre, baru)
-    pred_bag = np.mean(np.vstack([pred(m, x) for m in art["models"]]), axis=0)
-    if not np.isfinite(pred_bag).all():
-        _fail("prediksi mengandung NaN/inf")
-
-    hasil = pd.DataFrame({"skor": np.round(pred_bag, 4),
-                          "status": np.where(pred_bag > AMBANG_TINGGI,
-                                             LABEL_TINGGI, LABEL_NORMAL)})
-    hasil.insert(0, "row_id" if "row_id" in baru.columns else "baris",
-                 baru["row_id"].to_numpy() if "row_id" in baru.columns
-                 else np.arange(1, len(baru) + 1))
-
-    out = path_output or PREDIKSI_CSV
-    out.parent.mkdir(parents=True, exist_ok=True)
-    hasil.to_csv(out, index=False)
-
-    n_tinggi = int((pred_bag > AMBANG_TINGGI).sum())
-    print(f"[model] {len(baru)} siswa diprediksi dengan bag {len(art['models'])} model")
-    print(f"     skor {pred_bag.min():.3f}..{pred_bag.max():.3f} | "
-          f"rata-rata {pred_bag.mean():.3f}")
-    print(f"     {LABEL_TINGGI} (skor > {AMBANG_TINGGI}): {n_tinggi} siswa "
-          f"({n_tinggi / len(baru) * 100:.1f}%)")
-    print(f"     ditulis ke {out}")
-
-
-# ---------------------------------------------------------------- explain (SHAP)
-
 def _kontribusi(m: dict, x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Kontribusi tiap fitur terhadap prediksi satu model: PLS (linier) + TreeSHAP XGB.
 
     pred = base + xgb, dan keduanya aditif per fitur:
-      base      = intercept_PLS + sum_j koef_j * z_j          (z = fitur terstandardisasi)
-      xgb       = bias_TreeSHAP + sum_j shap_j
+      base  = intercept_PLS + sum_j koef_j * z_j        (z = fitur terstandardisasi)
+      xgb   = bias_TreeSHAP + sum_j shap_j
     Jadi kontribusi = koef_j * z_j + shap_j, dan total + bias = prediksi persis.
     """
     z = m["scaler"].transform(x)
@@ -673,18 +619,10 @@ def _kontribusi(m: dict, x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return linier + shap[:, :-1], float(np.asarray(m["pls"].intercept_).ravel()[0]) + shap[:, -1]
 
 
-def run_explain(path_input: Path, path_output: Path | None = None,
-                top: int = N_PENJELASAN) -> None:
-    """Untuk tiap siswa: skor, status, dan fitur yang paling mendorong skor itu."""
-    if not MODEL_JOBLIB.exists():
-        _fail(f"{MODEL_JOBLIB.name} belum ada — jalankan --mode final dulu")
+def _siapkan_input(pre: dict, path_input: Path) -> tuple[pd.DataFrame, np.ndarray]:
+    """Baca dan validasi data siswa baru, kembalikan (tabel asli, matriks 88 kolom)."""
     if not path_input.exists():
         _fail(f"berkas input tidak ada: {path_input}")
-    if top < 1:
-        _fail("--top minimal 1")
-
-    art = joblib.load(MODEL_JOBLIB)
-    pre = art["preprocessor"]
     baru = (pd.read_parquet(path_input) if path_input.suffix.lower() == ".parquet"
             else pd.read_csv(path_input))
     if len(baru) == 0:
@@ -696,45 +634,66 @@ def run_explain(path_input: Path, path_output: Path | None = None,
     kosong = [c for c in wajib if baru[c].isna().any()]
     if kosong:
         _fail(f"ada nilai kosong di kolom: {kosong[:5]}")
+    return baru, _transform(pre, baru)
 
-    x = _transform(pre, baru)
+
+def run_predict(path_input: Path, path_output: Path | None = None,
+                top: int = N_PENJELASAN) -> None:
+    """Skor + label kemungkinan stress + alasan per siswa, dalam satu keluaran.
+
+    Alasan memakai kontribusi fitur yang aditif (PLS linier + TreeSHAP XGB), jadi
+    jumlah kontribusi + bias = skor yang dilaporkan; bobotnya dirata-ratakan atas
+    6 model bag.
+    """
+    if not MODEL_JOBLIB.exists():
+        _fail(f"{MODEL_JOBLIB.name} belum ada — jalankan --mode final dulu")
+    if top < 1:
+        _fail("--top minimal 1")
+
+    art = joblib.load(MODEL_JOBLIB)
+    pre = art["preprocessor"]
+    baru, x = _siapkan_input(pre, path_input)
     names = list(pre["num"]) + list(pre["encoder"].get_feature_names_out(pre["cat"]))
 
-    # Rata-rata kontribusi 6 model bag: menjumlah tepat ke prediksi bag (sifat aditif).
+    skor = np.mean(np.vstack([pred(m, x) for m in art["models"]]), axis=0)
+    if not np.isfinite(skor).all():
+        _fail("prediksi mengandung NaN/inf")
+
     kontribusi, bias = [], []
     for m in art["models"]:
         k, b = _kontribusi(m, x)
         kontribusi.append(k)
         bias.append(b)
-    K = np.mean(np.stack(kontribusi, axis=0), axis=0)   # (6 model, n, 88) -> (n, 88)
-    b = float(np.mean(bias))
-    pred_bag = K.sum(axis=1) + b
-    galat = float(np.max(np.abs(pred_bag - np.mean(
-        np.vstack([pred(m, x) for m in art["models"]]), axis=0))))
+    K = np.mean(np.stack(kontribusi, axis=0), axis=0)      # (6 model, n, 88) -> (n, 88)
+    galat = float(np.max(np.abs(K.sum(axis=1) + np.mean(bias) - skor)))
     if galat > 1e-6:
-        _fail(f"kontribusi tidak menjumlah ke prediksi (selisih {galat:.2e})")
+        _fail(f"kontribusi tidak menjumlah ke skor (selisih {galat:.2e})")
 
     urut = np.argsort(-np.abs(K), axis=1)[:, :top]
     hasil = pd.DataFrame({
         "row_id" if "row_id" in baru.columns else "baris":
             (baru["row_id"].to_numpy() if "row_id" in baru.columns
              else np.arange(1, len(baru) + 1)),
-        "skor": np.round(pred_bag, 4),
-        "status": np.where(pred_bag > AMBANG_TINGGI, LABEL_TINGGI, LABEL_NORMAL),
+        "skor": np.round(skor, 4),
+        "status": np.where(skor > AMBANG_TINGGI, LABEL_TINGGI, LABEL_NORMAL),
     })
     for i in range(top):
         hasil[f"fitur_{i + 1}"] = [names[j] for j in urut[:, i]]
         hasil[f"kontribusi_{i + 1}"] = np.round(K[np.arange(len(K)), urut[:, i]], 4)
 
-    out = path_output or (OUT_DIR / "prediksi_penjelasan.csv")
+    out = path_output or PREDIKSI_CSV
     out.parent.mkdir(parents=True, exist_ok=True)
     hasil.to_csv(out, index=False)
 
-    print(f"[model] penjelasan {len(baru)} siswa | {top} fitur teratas | "
-          f"jumlah kontribusi = prediksi (selisih {galat:.1e})")
+    n_tinggi = int((skor > AMBANG_TINGGI).sum())
+    print(f"[model] {len(baru)} siswa | bag {len(art['models'])} model | {top} fitur teratas")
+    print(f"     skor {skor.min():.3f}..{skor.max():.3f} | rata-rata {skor.mean():.3f}")
+    print(f"     {LABEL_TINGGI} (skor > {AMBANG_TINGGI}): {n_tinggi} siswa "
+          f"({n_tinggi / len(baru) * 100:.1f}%)")
+    print(f"     jumlah kontribusi = skor (selisih {galat:.1e})")
     for i in range(len(baru)):
-        tanda = "  <-- " + LABEL_TINGGI if pred_bag[i] > AMBANG_TINGGI else ""
-        print(f"\n  baris {hasil.iloc[i, 0]} | skor {pred_bag[i]:.3f}{tanda}")
+        tanda = "  <-- " + LABEL_TINGGI if skor[i] > AMBANG_TINGGI else ""
+        print(f"\n  baris {hasil.iloc[i, 0]} | skor {skor[i]:.3f}{tanda}")
         for j in urut[i]:
             print(f"     {names[j]:<34} {K[i, j]:+.3f}")
     print(f"\n  ditulis ke {out}")
@@ -803,16 +762,16 @@ def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(
         description="Model risiko kecemasan: PLS1 + XGB residual (evaluasi CV populasi 306 + konfirmasi test).")
     ap.add_argument("--mode",
-                    choices=["check-split", "self-test", "cv", "test", "final", "predict", "explain"],
+                    choices=["check-split", "self-test", "cv", "test", "final", "predict"],
                     help="mode yang dijalankan; tanpa --mode hanya menampilkan bantuan")
     ap.add_argument("--seed", type=int, default=SEED,
                     help=f"seed RepeatedStratifiedKFold untuk --mode cv (default {SEED})")
     ap.add_argument("--input", type=Path,
                     help="berkas CSV/parquet data siswa baru (wajib untuk --mode predict)")
     ap.add_argument("--output", type=Path,
-                    help="tujuan CSV hasil predict/explain")
+                    help="tujuan CSV hasil --mode predict (default outputs/model/prediksi.csv)")
     ap.add_argument("--top", type=int, default=N_PENJELASAN,
-                    help=f"jumlah fitur teratas pada --mode explain (default {N_PENJELASAN})")
+                    help=f"jumlah fitur teratas yang dilaporkan (default {N_PENJELASAN})")
     ap.add_argument("--force", action="store_true",
                     help="izinkan --mode test/final menimpa artefak yang sudah ada "
                          "(hanya bila run sebelumnya gagal/rusak)")
@@ -820,8 +779,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.mode is None:
         ap.print_help()
-        print("\nMode tersedia: check-split | self-test | cv | test | final | "
-              "predict | explain\n"
+        print("\nMode tersedia: check-split | self-test | cv | test | final | predict\n"
               "Urutan: check-split -> self-test -> cv -> test -> final.\n"
               "cv memakai SELURUH 306 siswa (estimasi populasi, bukan angka test);\n"
               "test memakai split v1 (238 -> 68) yang sudah terpakai dan hanya konfirmasi.")
@@ -831,13 +789,10 @@ def main(argv: list[str] | None = None) -> None:
         _self_test()
         return
 
-    if args.mode in ("predict", "explain"):
+    if args.mode == "predict":
         if args.input is None:
-            _fail(f"--mode {args.mode} butuh --input <berkas.csv|.parquet>")
-        if args.mode == "predict":
-            run_predict(args.input, args.output)
-        else:
-            run_explain(args.input, args.output, top=args.top)
+            _fail("--mode predict butuh --input <berkas.csv|.parquet>")
+        run_predict(args.input, args.output, top=args.top)
         return
 
     df = muat_data()

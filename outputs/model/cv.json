@@ -1,6 +1,6 @@
 {
   "versi": "cv_v1",
-  "dibuat": "2026-10-28T17:07:53",
+  "dibuat": "2026-10-28T17:45:06",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
