@@ -25,6 +25,10 @@ Prediksi akhir = `base + XGB`.
 |---|---|---|
 | **MAE** | **0,2165** (CI95 0,196–0,237) | 0,2407 mentah / **0,2230** berbobot populasi |
 | **R²** | **0,6305** | 0,6884 |
+| **akurasi kategori** | **68,3%** (QWK 0,647) | 70,6% (QWK 0,730) |
+
+Ketiga baris itu saja yang disimpan di `cv.json` dan `test_*.json`, ditambah tabel per bin
+untuk menunjukkan kelemahan di ekor; metrik lain dihitung tidak dipersistenkan.
 
 Sebagai pembanding, analisis regresi berganda sebelumnya (9 faktor) mencapai R² 0,398 secara
 in-sample. Model ini mencapai R² 0,6305 secara **out-of-fold**, tetapi dengan 88 prediktor
@@ -92,9 +96,7 @@ Keluaran `outputs/model/prediksi.csv`:
 src/train.py            model + protokol evaluasi + inferensi (6 mode)
 src/config.py           nama kolom, path, seed
 outputs/model/model_bag.joblib     artefak siap pakai: bag 6 model (6 MB)
-outputs/model/cv.json   hasil CV populasi 306: MAE+CI95, RMSE, R², metrik kategori
-                        (akurasi, QWK, tabel silang, rincian per kategori), metrik
-                        skrining (AUC, sensitivitas, spesifisitas, PPV), per bin
+outputs/model/cv.json   hasil CV populasi 306: MAE+CI95, R², akurasi kategori + QWK, per bin
 outputs/model/per_bin.csv
 outputs/model/test_1d5f63ef.json   konfirmasi pada split 238→68 (metrik yang sama)
 outputs/model/produksi.json        spesifikasi artefak produksi + ambang kategori
@@ -123,6 +125,10 @@ python src/train.py --mode predict --input siswa_baru.csv   # skor + label + ala
 `--mode predict` membutuhkan CSV/parquet dengan 76 kolom input model (72 numerik + 4
 kategorikal) memakai nama kolom yang sama seperti `data/features.parquet`; kolom `row_id`
 opsional. Keluaran default `outputs/model/prediksi.csv`.
+
+Satu berkas bisa memuat berapa pun siswa: 5.000 siswa diproses dalam ~3,4 detik (bag 6
+model + kontribusi fitur untuk semuanya). Rincian fitur di layar hanya dicetak untuk 3
+siswa pertama supaya layar tidak penuh; seluruh siswa ada di berkas CSV keluaran.
 
 `--mode cv` dan `--mode final` membutuhkan `data/features.parquet` (306 × 82: 76 kolom
 input → 88 setelah one-hot, plus target) yang tidak disertakan karena memuat jawaban per

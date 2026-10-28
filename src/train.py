@@ -55,7 +55,7 @@ import pandas as pd
 import sklearn
 import xgboost
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.metrics import cohen_kappa_score, roc_auc_score
+from sklearn.metrics import cohen_kappa_score
 from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
@@ -408,29 +408,7 @@ def _metrik_kategori(y: np.ndarray, pred: np.ndarray) -> dict:
     return {
         "akurasi": float((ia == ib).mean()),
         "qwk": float(cohen_kappa_score(ia, ib, weights="quadratic")),
-        "meleset_1_tingkat": int((selisih == 1).sum()),
         "meleset_2_tingkat_atau_lebih": int((selisih >= 2).sum()),
-        "tabel_silang": silang,
-        "per_kategori": rinci,
-    }
-
-
-def _metrik_skrining(y: np.ndarray, pred: np.ndarray) -> dict:
-    """Pandangan biner: 'Tinggi atau lebih' (skor > 2,50) versus sisanya."""
-    t = KATEGORI_AMBANG[1]
-    ya = (y > t).astype(int)
-    pa = (pred > t).astype(int)
-    tp = int(((pa == 1) & (ya == 1)).sum())
-    fn = int(((pa == 0) & (ya == 1)).sum())
-    fp = int(((pa == 1) & (ya == 0)).sum())
-    return {
-        "ambang": float(t),
-        "positif_aktual": int(ya.sum()),
-        "ditandai": int(pa.sum()),
-        "auc": float(roc_auc_score(ya, pred)),
-        "sensitivitas": float(tp / (tp + fn)) if tp + fn else None,
-        "spesifisitas": float(1 - fp / int((ya == 0).sum())),
-        "ppv": float(tp / (tp + fp)) if tp + fp else None,
     }
 
 
@@ -510,10 +488,8 @@ def run_cv(df: pd.DataFrame, seed: int) -> None:
         "metode": "RepeatedStratifiedKFold 5x6 di seluruh 306; bag = rata-rata 6 repeat",
         "mae": mae_model,
         "mae_ci95": _ci_mae(y, pooled),
-        "rmse": float(np.sqrt(np.mean((y - pooled) ** 2))),
         "r2": r2,
-        "metrik_kategori": _metrik_kategori(y, pooled),
-        "metrik_skrining": _metrik_skrining(y, pooled),
+        "kategori": _metrik_kategori(y, pooled),
         "per_bin": tabel_bin,
         "catatan_metrik": (
             "Himpunan eval = populasi 306, jadi MAE mentah di sini sudah sama dengan MAE "
@@ -578,10 +554,8 @@ def run_test(df: pd.DataFrame, force: bool = False) -> None:
         "mae_raw": mae_raw,
         "mae_berbobot": mae_w,
         "mae_ci95_raw": _ci_mae(yte, p),
-        "rmse": float(np.sqrt(np.mean((yte - p) ** 2))),
         "r2": float(1 - np.sum((yte - p) ** 2) / np.sum((yte - yte.mean()) ** 2)),
-        "metrik_kategori": _metrik_kategori(yte, p),
-        "metrik_skrining": _metrik_skrining(yte, p),
+        "kategori": _metrik_kategori(yte, p),
         "per_bin": _per_bin(yte, p, bte),
         "disclosure": DISCLOSURE,
     }
@@ -759,10 +733,13 @@ def run_predict(path_input: Path, path_output: Path | None = None,
     print(f"     skor {skor.min():.3f}..{skor.max():.3f} | rata-rata {skor.mean():.3f}")
     print("     kategori: " + " | ".join(f"{k} {v}" for k, v in sebaran.items()))
     print(f"     jumlah kontribusi = skor (selisih {galat:.1e})")
-    for i in range(len(baru)):
+    tampil = len(baru) if len(baru) <= 20 else 3
+    for i in range(tampil):
         print(f"\n  baris {hasil.iloc[i, 0]} | skor {skor[i]:.3f} | {kat[i]}")
         for j in urut[i]:
             print(f"     {names[j]:<34} {K[i, j]:+.3f}")
+    if tampil < len(baru):
+        print(f"\n  ... rincian {len(baru) - tampil} siswa lainnya ada di berkas keluaran")
     print(f"\n  ditulis ke {out}")
 
 
