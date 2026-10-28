@@ -26,8 +26,8 @@ Mode:
   --mode cv          : CV 5x6 di 306 -> cv.json, oof.csv, per_bin.csv
   --mode test        : latih 238 -> uji 68 -> test_<sha8>.json
   --mode final       : BAG 6 model di 306 -> model_bag.joblib + produksi.json
-  --mode predict     : data siswa baru -> skor + label + kategori (Rendah/Sedang/Tinggi/
-                       Sangat Tinggi) + fitur paling berpengaruh (SHAP, selalu)
+  --mode predict     : data siswa baru -> skor + kategori (Rendah/Sedang/Tinggi/Sangat
+                       Tinggi) + fitur paling berpengaruh (SHAP, selalu)
 Tanpa --mode hanya mencetak bantuan (tidak menjalankan apa pun).
 
 Urutan pemakaian:
@@ -87,12 +87,10 @@ PREDIKSI_CSV = OUT_DIR / "prediksi.csv"
 # Batas kategori mengikuti skema pada analisis sebelumnya: Rendah <= 1,75;
 # Sedang 1,75-2,5; Tinggi 2,5-3,25; Sangat Tinggi > 3,25. Karena itu "Tinggi"
 # (kemungkinan stress) mulai DI ATAS 2,5, bukan dari 2,5.
-AMBANG_TINGGI = 2.5
-LABEL_TINGGI = "Kemungkinan stress"
-LABEL_NORMAL = "Tidak"
 # Empat kategori kecemasan: angkanya TIDAK tertulis di dokumen analisis sebelumnya, hanya
 # jumlah per kategori (115/153/35/3 dari 306). Ambang di bawah adalah satu-satunya potongan
-# yang mereproduksi jumlah itu persis, jadi statusnya rekonstruksi, bukan kutipan.
+# berspasi sama pada skala 1-4 yang mereproduksi jumlah itu persis, jadi statusnya
+# rekonstruksi, bukan kutipan.
 KATEGORI_AMBANG = (1.75, 2.50, 3.25)
 KATEGORI_LABEL = ("Rendah", "Sedang", "Tinggi", "Sangat Tinggi")
 N_PENJELASAN = 5      # jumlah fitur teratas yang dilaporkan per siswa
@@ -587,7 +585,8 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
         "artefak": MODEL_JOBLIB.name,
         "n_baris": int(len(df)),
         "n_fitur": int(x.shape[1]),
-        "ambang_kemungkinan_stress": AMBANG_TINGGI,
+        "kategori_ambang": list(KATEGORI_AMBANG),
+        "kategori_label": list(KATEGORI_LABEL),
         "mae_cv_bag": cv["mae"],
         "mae_cv_ci95": cv["mae_ci95"],
         "prediksi": {"in_sample": True,
@@ -685,7 +684,6 @@ def run_predict(path_input: Path, path_output: Path | None = None,
             (baru["row_id"].to_numpy() if "row_id" in baru.columns
              else np.arange(1, len(baru) + 1)),
         "skor": np.round(skor, 4),
-        "status": np.where(skor > AMBANG_TINGGI, LABEL_TINGGI, LABEL_NORMAL),
         "kategori": _kategori(skor),
     })
     for i in range(top):
@@ -696,17 +694,14 @@ def run_predict(path_input: Path, path_output: Path | None = None,
     out.parent.mkdir(parents=True, exist_ok=True)
     hasil.to_csv(out, index=False)
 
-    n_tinggi = int((skor > AMBANG_TINGGI).sum())
+    kat = _kategori(skor)
+    sebaran = pd.Series(kat).value_counts().reindex(KATEGORI_LABEL, fill_value=0)
     print(f"[model] {len(baru)} siswa | bag {len(art['models'])} model | {top} fitur teratas")
     print(f"     skor {skor.min():.3f}..{skor.max():.3f} | rata-rata {skor.mean():.3f}")
-    print(f"     {LABEL_TINGGI} (skor > {AMBANG_TINGGI}): {n_tinggi} siswa "
-          f"({n_tinggi / len(baru) * 100:.1f}%)")
-    sebaran = pd.Series(_kategori(skor)).value_counts().reindex(KATEGORI_LABEL, fill_value=0)
     print("     kategori: " + " | ".join(f"{k} {v}" for k, v in sebaran.items()))
     print(f"     jumlah kontribusi = skor (selisih {galat:.1e})")
     for i in range(len(baru)):
-        print(f"\n  baris {hasil.iloc[i, 0]} | skor {skor[i]:.3f} | {hasil['kategori'].iloc[i]}"
-              f"{'  <-- ' + LABEL_TINGGI if skor[i] > AMBANG_TINGGI else ''}")
+        print(f"\n  baris {hasil.iloc[i, 0]} | skor {skor[i]:.3f} | {kat[i]}")
         for j in urut[i]:
             print(f"     {names[j]:<34} {K[i, j]:+.3f}")
     print(f"\n  ditulis ke {out}")

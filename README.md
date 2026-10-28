@@ -42,14 +42,13 @@ berisiko tinggi.
 - **Produksi** — 6 model (satu per ulangan), jawaban dirata-ratakan. Konfigurasi ini persis
   yang diukur, jadi 0,2165 berlaku untuk artefak yang dikirim.
 
-## Prediksi, label, dan alasan (satu keluaran)
+## Prediksi, kategori, dan alasan (satu keluaran)
 
-`--mode predict` mengeluarkan empat hal sekaligus, tanpa opsi tambahan:
+`--mode predict` mengeluarkan tiga hal sekaligus, tanpa opsi tambahan:
 
 1. **skor** — taksiran skor kecemasan (skala 1–4), rata-rata bag 6 model;
-2. **status** — `Kemungkinan stress` bila skor > 2,5, selain itu `Tidak`;
-3. **kategori** — Rendah / Sedang / Tinggi / Sangat Tinggi;
-4. **fitur_1..n + kontribusi_1..n** — fitur yang paling mendorong skor itu (default 5).
+2. **kategori** — Rendah / Sedang / Tinggi / Sangat Tinggi;
+3. **fitur_1..n + kontribusi_1..n** — fitur yang paling mendorong skor itu (default 5).
 
 Skema kategori mengikuti analisis sebelumnya, dan dapat direproduksi persis dari data ini:
 
@@ -61,13 +60,14 @@ Skema kategori mengikuti analisis sebelumnya, dan dapat direproduksi persis dari
 | Sangat Tinggi | > 3,25 | 3 |
 
 > Angka ambangnya **tidak tertulis** di dokumen analisis sebelumnya — di sana hanya ada
-> jumlah per kategori. Batas 1,75 / 2,50 / 3,25 adalah satu-satunya potongan yang
+> jumlah per kategori. Batas 1,75 / 2,50 / 3,25 adalah satu-satunya pembagian berspasi
+> sama pada skala 1–4 (0,75 per pita, setara skala jumlah 20–80 dengan interval 15) yang
 > mereproduksi jumlah itu persis, jadi statusnya rekonstruksi, bukan kutipan.
 
-Karena nilai tepat 2,50 masih masuk Sedang, "Tinggi" mulai **di atas** 2,5 → 38 siswa
-(12,4%). Pada CV, aturan ini menangkap 22 dari 43 siswa berisiko tinggi (sensitivitas 51%,
-spesifisitas 94%); AUC skor itu sendiri 0,87, jadi titik operasi 2,5 dipakai apa adanya —
-bukan hasil optimasi. Label ini penanda awal, bukan penentuan status.
+Akurasi kategori pada CV (prediksi OOF tiap siswa dibanding kategorinya yang sebenarnya):
+**68,3% tepat**, 31,7% meleset satu tingkat, **tidak ada yang meleset dua tingkat**,
+QWK 0,647. Kategori tertinggi paling sulit ditebak (hanya 1 siswa diprediksi Sangat Tinggi
+dari 3 yang sebenarnya), karena prediksi model sedikit terkompresi ke tengah.
 
 ### Cara kontribusinya dihitung
 
@@ -84,7 +84,7 @@ berkorelasi juga berbagi kredit secara arbitrer, jadi jangan menafsirkan selisih
 antar item sebagai fakta.
 
 Keluaran `outputs/model/prediksi.csv`:
-`row_id, skor, status, kategori, fitur_1, kontribusi_1, …, fitur_n, kontribusi_n`.
+`row_id, skor, kategori, fitur_1, kontribusi_1, …, fitur_n, kontribusi_n`.
 
 ## Isi repo
 
