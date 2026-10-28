@@ -10,6 +10,7 @@ Kalau ada angka yang berubah tanpa manifest ikut berubah, berarti artefaknya
 diedit tangan.
 
 Pakai: python src/buat_manifest.py [--output PATH]
+       python src/buat_manifest.py --check   # cocokkan berkas sekarang dengan manifest
 """
 from __future__ import annotations
 
@@ -45,10 +46,38 @@ def baca(*bagian: str) -> dict:
     return json.loads((C.ROOT.joinpath(*bagian)).read_text())
 
 
+def periksa() -> int:
+    """Cocokkan sha256 berkas sekarang dengan manifest yang tersimpan."""
+    simpan = baca("outputs", "model", "manifest.json")
+    beda = 0
+    for rel, catat in simpan["berkas"].items():
+        f = C.ROOT / rel
+        if not f.is_file():
+            print(f"  HILANG {rel}")
+            beda += 1
+        elif (h := sha256(f)) != catat["sha256"]:
+            print(f"  BEDA   {rel} (manifest {catat['sha256'][:12]}, sekarang {h[:12]})")
+            beda += 1
+    print(f"[manifest] publik: {len(simpan['berkas']) - beda}/{len(simpan['berkas'])} cocok")
+    for rel, catat in simpan.get("privat", {}).items():
+        f = C.ROOT / rel
+        if not f.is_file():
+            print(f"  privat {rel}: tidak ada di mesin ini (dilewati)")
+        elif (h := sha256(f)) != catat["sha256"]:
+            print(f"  BEDA   {rel} (privat)")
+            beda += 1
+    return 0 if beda == 0 else 1
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--output", default=str(C.ROOT / "outputs" / "model" / "manifest.json"))
+    p.add_argument("--check", action="store_true",
+                   help="cocokkan berkas sekarang dengan manifest tersimpan, jangan menulis")
     a = p.parse_args()
+
+    if a.check:
+        return periksa()
 
     cv, te, pr = baca("outputs", "model", "cv.json"), baca("outputs", "model", "test_1d5f63ef.json"), \
         baca("outputs", "model", "produksi.json")

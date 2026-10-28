@@ -55,16 +55,16 @@
       "byte": 7664
     },
     "src/buat_manifest.py": {
-      "sha256": "a0b0890aaa9c682ceac12d5a1d8bd891631181b72e9ee1f32905bd90465386d8",
-      "byte": 4417
+      "sha256": "23af27cce22e8222046fa13bd21e2cd72d75629bdd4ad0d1091f87d0c2f3b4b3",
+      "byte": 5606
     },
     "requirements.txt": {
       "sha256": "b37165828f32dc8e43082f9dcec6c35e0804473d875f28c560d99ff7c0c910ef",
       "byte": 203
     },
     "README.md": {
-      "sha256": "a6fec9ab767f404aacb688128e5f1b13fd1d3a5a79540364f0d032ddf31edc3f",
-      "byte": 12991
+      "sha256": "c9e16d4c84b66e87ec1e95c9aa3a29c4a375afa75b2932302d693d620adca3a2",
+      "byte": 13065
     },
     "docs/codebook.md": {
       "sha256": "cb2099b59092e5d69397a913d786d2039e7f6e40d83b1cc5752d25f9d40f3392",

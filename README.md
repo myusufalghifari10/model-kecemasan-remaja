@@ -157,6 +157,7 @@ python src/train.py --mode final         # bag 6 model -> model_bag.joblib
 python src/train.py --mode predict --input siswa_baru.csv   # skor + label + alasan
 python src/bandingkan_regresi.py         # regresi 9 faktor, protokol sama -> JSON
 python src/buat_manifest.py              # sha256 + angka utama -> manifest.json
+python src/buat_manifest.py --check      # cocokkan berkas dengan manifest tersimpan
 ```
 
 `--mode predict` membutuhkan CSV/parquet dengan 76 kolom input model (72 numerik + 4
@@ -186,7 +187,7 @@ tidak ikut repo.
 | Split 238/68 tidak berubah | `data/split_v1.json` + `SHA_V1` di `train.py` | `--mode check-split` (privat) |
 | 6 model produksi #8/#11/#17/#20/#24/#26 | `produksi.json → pemilihan_model`, `train.py → PEMILIHAN_BAG` | baca dua berkas |
 | Regresi 9 faktor: MAE CV 0,2469, R² 0,534 | `outputs/model/perbandingan_regresi.json` | `python src/bandingkan_regresi.py` (privat) |
-| Angka ↔ berkas yang menghasilkannya | `outputs/model/manifest.json` | `python src/buat_manifest.py`, bandingkan sha256 |
+| Angka ↔ berkas yang menghasilkannya | `outputs/model/manifest.json` | `python src/buat_manifest.py --check` |
 
 Tanpa data mentah, yang bisa diperiksa langsung dari hasil clone: seluruh angka di `cv.json`,
 `test_*.json`, `produksi.json`, `perbandingan_regresi.json`, `manifest.json`, plus `--mode
