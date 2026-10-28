@@ -62,7 +62,6 @@ SEED = C.RANDOM_SEED
 N_SPLITS, N_REPEATS = 5, 6
 N_FOLD = N_SPLITS * N_REPEATS
 N_BOOT = 2000
-N_BOOT_BANDING = 4000
 N_POP = 306
 N_BAG = N_REPEATS
 PLS_COMPONENTS = 1
@@ -73,7 +72,6 @@ N_JOBS = 1
 
 SPLIT_JSON = C.DATA_SPLIT
 SHA_V1 = "1d5f63efb7d61488"      # 16 karakter pertama sha256_test_row_id split terkunci
-BASELINE_OOF = C.ROOT / "outputs" / "baseline_oof.csv"
 
 OUT_DIR = C.ROOT / "outputs" / "model"
 CV_JSON = OUT_DIR / "cv.json"
@@ -91,8 +89,7 @@ DISCLOSURE = {
         "dipakai memilih model, base, atau parameter apa pun."),
     "seleksi_base": (
         "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, "
-        "ridge1000} memakai CV di 306, bukan data uji; dibatasi oleh uji 3 seed fold "
-        "(42, 7, 2024; 18/18 repeat menang)."),
+        "ridge1000} memakai CV di 306 siswa, bukan data uji."),
     "bin_tipis": (
         "Bin 10 hanya 3 siswa (bin 8: 9, bin 9: 6). Tabel per bin dilaporkan dengan flag "
         "n<=5 dan bin tersebut tidak boleh diranking atau diklaim."),
@@ -360,13 +357,6 @@ def akumulasi_bag(folds: list[tuple[np.ndarray, np.ndarray]], n: int,
     return oof
 
 
-def _ci_bootstrap(d: np.ndarray, n_boot: int, seed: int) -> list[float]:
-    rng = np.random.default_rng(seed)
-    d = np.asarray(d, float)
-    sim = np.array([d[rng.integers(0, len(d), len(d))].mean() for _ in range(n_boot)])
-    return [float(np.percentile(sim, 2.5)), float(np.percentile(sim, 97.5))]
-
-
 def _ci_mae(y: np.ndarray, p: np.ndarray, n_boot: int = N_BOOT, seed: int = SEED) -> list:
     rng = np.random.default_rng(seed)
     y = np.asarray(y, float)
@@ -416,60 +406,29 @@ def run_check_split(df: pd.DataFrame) -> None:
 # ---------------------------------------------------------------- cv
 
 def run_cv(df: pd.DataFrame, seed: int) -> None:
-    """CV 5x6 di seluruh 306 siswa; bandingkan berpasangan dengan baseline XGB murni."""
+    """CV 5x6 di seluruh 306 siswa: estimasi populasi (MAE, R2, tabel per bin)."""
     params = muat_params()
     y = df[C.TARGET_CONT].to_numpy(float)
     b = _bin(y)
     n = len(df)
     folds = _daftar_fold(df, seed)
     print(f"[model] CV {N_SPLITS}x{N_REPEATS} di {n} siswa (seed {seed}) — "
-          f"base PLS{PLS_COMPONENTS} + XGB residual, dan baseline XGB murni", flush=True)
+          f"base PLS{PLS_COMPONENTS} + XGB residual", flush=True)
 
     t0 = time.time()
 
     def fp_model(tr, va):
+        # Encoder di-fit hanya pada data latih lipatan (lihat _encode).
         xt, xv = _encode(df.iloc[tr], df.iloc[va], "76")
         return latih_pred(params, xt, y[tr], bobot(y[tr]), xv)
 
-    def fp_base(tr, va):
-        xt, xv = _encode(df.iloc[tr], df.iloc[va], "76")
-        m = xgboost.XGBRegressor(**{**C.BASE_XGB, "n_jobs": N_JOBS},
-                                 objective=OBJECTIVE, **params)
-        m.fit(xt, y[tr], sample_weight=bobot(y[tr]))
-        return np.asarray(m.predict(xv), float)
-
-    # Cache encoder per fold: _encode memfit OneHotEncoder, jadi dipanggil sekali per fold
-    # lewat dua fungsi di atas hanya untuk kesederhanaan. Waktu masih di bawah 5 menit.
     oof = akumulasi_bag(folds, n, fp_model)
-    print(f"  model selesai ({time.time() - t0:.0f}s)", flush=True)
-    oof_base = akumulasi_bag(folds, n, fp_base)
-    print(f"  baseline selesai ({time.time() - t0:.0f}s)", flush=True)
+    print(f"  selesai ({time.time() - t0:.0f}s)", flush=True)
 
     pooled = oof.mean(axis=0)
-    pooled_base = oof_base.mean(axis=0)
     mae_model = float(_mae(y, pooled))
-    mae_base = float(_mae(y, pooled_base))
-
-    mae_rep_model = [float(_mae(y, oof[r])) for r in range(N_REPEATS)]
-    mae_rep_base = [float(_mae(y, oof_base[r])) for r in range(N_REPEATS)]
-    wins = int(sum(a < c for a, c in zip(mae_rep_model, mae_rep_base)))
-
-    d = np.abs(y - pooled) - np.abs(y - pooled_base)   # <0 = model lebih baik
-    ci_d = _ci_bootstrap(d, N_BOOT_BANDING, SEED)
     r2 = float(1 - np.sum((y - pooled) ** 2) / np.sum((y - y.mean()) ** 2))
     tabel_bin = _per_bin(y, pooled, b)
-
-    # Pembanding: prediksi out-of-fold model pembanding (XGB murni) bila berkasnya ada.
-    banding = None
-    if BASELINE_OOF.exists():
-        o = pd.read_csv(BASELINE_OOF)
-        if {"row_id", "y", "pred"} <= set(o.columns):
-            o = o.sort_values("row_id")
-            if len(o) != n or not np.allclose(o["y"].to_numpy(float), y):
-                _fail("baseline_oof.csv tidak sejajar dengan data — jangan dibandingkan")
-            banding = {"sumber": str(BASELINE_OOF.relative_to(C.ROOT)),
-                       "mae": float(_mae(o["y"].to_numpy(float),
-                                         o["pred"].to_numpy(float)))}
 
     ringkas = {
         "versi": "cv_v1",
@@ -483,23 +442,8 @@ def run_cv(df: pd.DataFrame, seed: int) -> None:
         "metode": "RepeatedStratifiedKFold 5x6 di seluruh 306; bag = rata-rata 6 repeat",
         "mae": mae_model,
         "mae_ci95": _ci_mae(y, pooled),
-        "rmse": float(np.sqrt(np.mean((y - pooled) ** 2))),
         "r2": r2,
-        "mae_per_fold_median": float(np.median(mae_rep_model)),
         "per_bin": tabel_bin,
-        "baseline_xgb_murni": {"mae": mae_base, "mae_per_fold": mae_rep_base,
-                               "catatan": "fold identik, encoder identik"},
-        "perbandingan_berpasangan": {
-            "delta_mae": float(d.mean()),
-            "ci95_delta": ci_d,
-            "repeat_menang": wins,
-            "n_repeat": int(N_REPEATS),
-            "siswa_membaik": int((d < 0).sum()),
-            "siswa_memburuk": int((d > 0).sum()),
-            "siswa_seri": int((d == 0).sum()),
-            "catatan": "delta = |err model| - |err baseline|; negatif = model lebih baik",
-        },
-        "pembanding": banding,
         "catatan_metrik": (
             "Himpunan eval = populasi 306, jadi MAE mentah di sini sudah sama dengan MAE "
             "berbobot populasi. Angka ini BUKAN angka test (68 siswa ikut di dalam CV)."),
@@ -508,27 +452,13 @@ def run_cv(df: pd.DataFrame, seed: int) -> None:
     }
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame({"fold": np.arange(len(folds)), "n_uji": [len(v) for _, v in folds],
-                  "mae_model": [float(_mae(y[v], oof[k // N_SPLITS][v]))
-                              for k, (_, v) in enumerate(folds)],
-                  "mae_baseline": [float(_mae(y[v], oof_base[k // N_SPLITS][v]))
-                                   for k, (_, v) in enumerate(folds)]
-                  }).to_csv(OUT_DIR / "cv_per_fold.csv", index=False)
     pd.DataFrame({"row_id": df["row_id"].astype(int), "y": y, "bin": b,
-                  "pred": pooled, "pred_baseline": pooled_base}).to_csv(OOF_CSV, index=False)
+                  "pred": pooled}).to_csv(OOF_CSV, index=False)
     pd.DataFrame(tabel_bin).to_csv(PER_BIN_CSV, index=False)
     CV_JSON.write_text(json.dumps(ringkas, indent=2), encoding="utf-8")
 
     print(f"\n[model] MAE populasi 306 : {mae_model:.4f} "
-          f"CI95 [{ringkas['mae_ci95'][0]:.3f}, {ringkas['mae_ci95'][1]:.3f}]")
-    print(f"     baseline XGB murni: {mae_base:.4f} | RMSE {ringkas['rmse']:.4f} | "
-          f"R2 {r2:.4f}")
-    print(f"     berpasangan: delta {d.mean():+.4f} CI95 "
-          f"[{ci_d[0]:+.4f}, {ci_d[1]:+.4f}] | repeat menang {wins}/{N_REPEATS} | "
-          f"siswa membaik {int((d < 0).sum())}/{n}")
-    if banding:
-        print(f"     pembanding (XGB murni): {banding['mae']:.4f} "
-              f"(baseline di sini {mae_base:.4f})")
+          f"CI95 [{ringkas['mae_ci95'][0]:.3f}, {ringkas['mae_ci95'][1]:.3f}] | R2 {r2:.4f}")
     for r in tabel_bin:
         if r["n"]:
             flag = "" if r["boleh_diranking"] else "  [n<=5: tidak boleh diranking]"
@@ -577,10 +507,7 @@ def run_test(df: pd.DataFrame, force: bool = False) -> None:
         "mae_raw": mae_raw,
         "mae_berbobot": mae_w,
         "mae_ci95_raw": _ci_mae(yte, p),
-        "rmse": float(np.sqrt(np.mean((yte - p) ** 2))),
         "r2": float(1 - np.sum((yte - p) ** 2) / np.sum((yte - yte.mean()) ** 2)),
-        "bias": float((yte - p).mean()),
-        "slope_pred_atas_y": float(np.polyfit(yte, p, 1)[0]),
         "per_bin": _per_bin(yte, p, bte),
         "disclosure": DISCLOSURE,
     }
@@ -589,7 +516,7 @@ def run_test(df: pd.DataFrame, force: bool = False) -> None:
     path.write_text(json.dumps(hasil, indent=2), encoding="utf-8")
 
     print(f"\n[model] TEST 238 -> 68: MAE mentah {mae_raw:.4f} | berbobot populasi {mae_w:.4f}")
-    print(f"     RMSE {hasil['rmse']:.4f} | R2 {hasil['r2']:.4f} | bias {hasil['bias']:+.3f}")
+    print(f"     R2 {hasil['r2']:.4f}")
     print(f"     ditulis ke {path.relative_to(C.ROOT)}")
 
 
@@ -645,7 +572,6 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
         "n_fitur": int(x.shape[1]),
         "mae_cv_bag": cv["mae"],
         "mae_cv_ci95": cv["mae_ci95"],
-        "mae_cv_baseline_xgb": cv["baseline_xgb_murni"]["mae"],
         "prediksi": {"in_sample": True,
                      "catatan": ("prediksi bag pada 306 baris yang SAMA dengan data latih; "
                                  "estimasi out-of-sample = mae_cv_bag"),
@@ -660,8 +586,7 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
     PRODUKSI_JSON.write_text(json.dumps(hasil, indent=2), encoding="utf-8")
 
     print(f"\n[model] model produksi: BAG {N_BAG} model, {len(df)} siswa x {x.shape[1]} fitur")
-    print(f"     MAE CV (populasi 306) {cv['mae']:.4f} | baseline XGB "
-          f"{cv['baseline_xgb_murni']['mae']:.4f}")
+    print(f"     MAE CV (populasi 306) {cv['mae']:.4f} | R2 {cv['r2']:.4f}")
     print(f"     round-trip joblib {selisih:.1e} | {MODEL_JOBLIB.relative_to(C.ROOT)}")
 
 

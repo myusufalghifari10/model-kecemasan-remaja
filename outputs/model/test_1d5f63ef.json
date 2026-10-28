@@ -1,6 +1,6 @@
 {
   "versi": "test_v1",
-  "dibuat": "2026-10-28T16:55:27",
+  "dibuat": "2026-10-28T17:07:54",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -30,10 +30,7 @@
     0.19352523608358926,
     0.29179738337961925
   ],
-  "rmse": 0.314185030567487,
   "r2": 0.6883715087677621,
-  "bias": 0.04567616652281671,
-  "slope_pred_atas_y": 0.6463227272367333,
   "per_bin": [
     {
       "bin": 1,
@@ -129,7 +126,7 @@
   "disclosure": {
     "cv_bukan_test": "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka itu estimasi populasi, BUKAN angka uji.",
     "test_konfirmasi": "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, tidak dipakai memilih model, base, atau parameter apa pun.",
-    "seleksi_base": "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, ridge1000} memakai CV di 306, bukan data uji; dibatasi oleh uji 3 seed fold (42, 7, 2024; 18/18 repeat menang).",
+    "seleksi_base": "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, ridge1000} memakai CV di 306 siswa, bukan data uji.",
     "bin_tipis": "Bin 10 hanya 3 siswa (bin 8: 9, bin 9: 6). Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
     "privacy": "oof.csv memuat y per siswa dan bersifat lokal: jangan di-commit. Pola .gitignore yang dipakai: outputs/model/oof.csv"
   }

@@ -21,14 +21,18 @@ Prediksi akhir = `base + XGB`.
 
 ## Hasil
 
-| protokol | MAE | keterangan |
+| metrik | CV 5×6 (306 siswa) | Latih 238 → uji 68 |
 |---|---|---|
-| CV 5×6 di 306 siswa | **0,2165** (CI95 0,196–0,237) | estimasi populasi |
-| XGB murni, lipatan identik | 0,2234 | pembanding |
-| Latih 238 → uji 68 | 0,2407 mentah / 0,2230 berbobot populasi | konfirmasi |
+| **MAE** | **0,2165** (CI95 0,196–0,237) | 0,2407 mentah / **0,2230** berbobot populasi |
+| **R²** | **0,6305** | 0,6884 |
 
-RMSE 0,2835 · R² 0,6305 · selisih berpasangan vs XGB murni −0,0069
-(CI95 −0,0136…−0,0004, menang 6/6 ulangan).
+Sebagai pembanding, analisis regresi berganda sebelumnya (9 faktor) mencapai R² 0,398 secara
+in-sample. Model ini mencapai R² 0,6305 secara **out-of-fold**, tetapi dengan 88 prediktor
+— bukan perbandingan setara, hanya penanda besaran.
+
+Diagnosis per bin (CV): galat terkonsentrasi di ekor. Bin 9 (n=6) MAE 0,415 dengan bias
++0,383; bin 8 (n=9) MAE 0,291 dengan bias +0,291. Model menaksir terlalu rendah pada siswa
+berisiko tinggi.
 
 ## 30 model untuk mengukur, 6 model untuk produksi
 
@@ -43,9 +47,8 @@ RMSE 0,2835 · R² 0,6305 · selisih berpasangan vs XGB murni −0,0069
 ```
 src/train.py            model + protokol evaluasi (5 mode)
 src/config.py           nama kolom, path, seed
-outputs/model/cv.json   hasil CV populasi 306 (angka utama)
+outputs/model/cv.json   hasil CV populasi 306 (MAE, R², per bin)
 outputs/model/per_bin.csv
-outputs/model/cv_per_fold.csv
 outputs/model/test_1d5f63ef.json   konfirmasi pada split 238→68
 outputs/model/produksi.json        spesifikasi artefak produksi
 data/split_v1.json      split terkunci 238/68 (sha 1d5f63efb7d61488)

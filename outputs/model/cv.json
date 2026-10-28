@@ -1,6 +1,6 @@
 {
   "versi": "cv_v1",
-  "dibuat": "2026-10-28T16:55:23",
+  "dibuat": "2026-10-28T17:07:53",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -27,9 +27,7 @@
     0.19585796812217088,
     0.23704683964742224
   ],
-  "rmse": 0.28350078996397415,
   "r2": 0.630483826303162,
-  "mae_per_fold_median": 0.2193228923987836,
   "per_bin": [
     {
       "bin": 1,
@@ -122,41 +120,12 @@
       "boleh_diranking": false
     }
   ],
-  "baseline_xgb_murni": {
-    "mae": 0.2234419087179346,
-    "mae_per_fold": [
-      0.23193439907497831,
-      0.22188573171889864,
-      0.23387940545487246,
-      0.23242750432756212,
-      0.22317970243154786,
-      0.2280185201588799
-    ],
-    "catatan": "fold identik, encoder identik"
-  },
-  "perbandingan_berpasangan": {
-    "delta_mae": -0.006921173140919101,
-    "ci95_delta": [
-      -0.01364021398750827,
-      -0.0003795672436071105
-    ],
-    "repeat_menang": 6,
-    "n_repeat": 6,
-    "siswa_membaik": 156,
-    "siswa_memburuk": 150,
-    "siswa_seri": 0,
-    "catatan": "delta = |err model| - |err baseline|; negatif = model lebih baik"
-  },
-  "pembanding": {
-    "sumber": "outputs/baseline_oof.csv",
-    "mae": 0.22331975662110934
-  },
   "catatan_metrik": "Himpunan eval = populasi 306, jadi MAE mentah di sini sudah sama dengan MAE berbobot populasi. Angka ini BUKAN angka test (68 siswa ikut di dalam CV).",
-  "elapsed_detik": 7.5,
+  "elapsed_detik": 3.8,
   "disclosure": {
     "cv_bukan_test": "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka itu estimasi populasi, BUKAN angka uji.",
     "test_konfirmasi": "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, tidak dipakai memilih model, base, atau parameter apa pun.",
-    "seleksi_base": "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, ridge1000} memakai CV di 306, bukan data uji; dibatasi oleh uji 3 seed fold (42, 7, 2024; 18/18 repeat menang).",
+    "seleksi_base": "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, ridge1000} memakai CV di 306 siswa, bukan data uji.",
     "bin_tipis": "Bin 10 hanya 3 siswa (bin 8: 9, bin 9: 6). Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
     "privacy": "oof.csv memuat y per siswa dan bersifat lokal: jangan di-commit. Pola .gitignore yang dipakai: outputs/model/oof.csv"
   }
