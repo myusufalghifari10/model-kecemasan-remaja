@@ -44,14 +44,14 @@ berisiko tinggi.
 
 ## Prediksi, label, dan alasan (satu keluaran)
 
-`--mode predict` mengeluarkan tiga hal sekaligus, tanpa opsi tambahan:
+`--mode predict` mengeluarkan empat hal sekaligus, tanpa opsi tambahan:
 
 1. **skor** — taksiran skor kecemasan (skala 1–4), rata-rata bag 6 model;
 2. **status** — `Kemungkinan stress` bila skor > 2,5, selain itu `Tidak`;
-3. **fitur_1..n + kontribusi_1..n** — fitur yang paling mendorong skor itu (default 5).
+3. **kategori** — Rendah / Sedang / Tinggi / Sangat Tinggi;
+4. **fitur_1..n + kontribusi_1..n** — fitur yang paling mendorong skor itu (default 5).
 
-Ambang 2,5 mengikuti skema kategori pada analisis sebelumnya, dan skema itu dapat
-direproduksi persis dari data ini:
+Skema kategori mengikuti analisis sebelumnya, dan dapat direproduksi persis dari data ini:
 
 | kategori | batas | n |
 |---|---|---|
@@ -59,6 +59,10 @@ direproduksi persis dari data ini:
 | Sedang | 1,75 – 2,50 | 153 |
 | Tinggi | 2,50 – 3,25 | 35 |
 | Sangat Tinggi | > 3,25 | 3 |
+
+> Angka ambangnya **tidak tertulis** di dokumen analisis sebelumnya — di sana hanya ada
+> jumlah per kategori. Batas 1,75 / 2,50 / 3,25 adalah satu-satunya potongan yang
+> mereproduksi jumlah itu persis, jadi statusnya rekonstruksi, bukan kutipan.
 
 Karena nilai tepat 2,50 masih masuk Sedang, "Tinggi" mulai **di atas** 2,5 → 38 siswa
 (12,4%). Pada CV, aturan ini menangkap 22 dari 43 siswa berisiko tinggi (sensitivitas 51%,
@@ -80,7 +84,7 @@ berkorelasi juga berbagi kredit secara arbitrer, jadi jangan menafsirkan selisih
 antar item sebagai fakta.
 
 Keluaran `outputs/model/prediksi.csv`:
-`row_id, skor, status, fitur_1, kontribusi_1, …, fitur_n, kontribusi_n`.
+`row_id, skor, status, kategori, fitur_1, kontribusi_1, …, fitur_n, kontribusi_n`.
 
 ## Isi repo
 
