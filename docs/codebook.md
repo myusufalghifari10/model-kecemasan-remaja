@@ -58,6 +58,7 @@ Urutan kolom pada matriks latih bersifat tetap; model memakai urutan itu apa ada
 | `KECEMASANSTRESS12` = 5 | Di luar skala 1–4 → imputasi median kolom |
 | Item terbalik (SOSIAL3) | Reverse-score: nilai_baru = 6 − nilai |
 | `VAR00001` | Kolom kosong → dibuang |
+| `KECEMSANSTRESS9` (salah ketik) | Nama kolom item 9 → `KECEMASANSTRESS9` |
 
 - **Audit arah item (hasil verifikasi).** `REVERSE_ITEMS=[SOSIAL3]` sudah lengkap: semua item bernegasi lain (KECEMASANSTRESS2/9/16/17/22, MASADEPAN3, COPING16–18) sengaja TIDAK di-reverse karena tetap searah konstruk/subskalanya (COPING16–18 = subskala `coping_negatif`, skor tinggi = makin negatif).
 - **Sensitivitas item 12 (nilai 5).** Nilai invalid diisi median kolom; alternatif isi 4 teruji TIDAK mengubah label `y_biner` siswa mana pun.
@@ -67,7 +68,7 @@ Urutan kolom pada matriks latih bersifat tetap; model memakai urutan itu apa ada
 - **Label status orang tua.** Kategori 1 berlabel *"kedua orang tua meninggal dunia"* tapi 226 dari 240 siswa kategori tersebut tinggal bersama ayah dan ibu → label kemungkinan salah ketik. Asumsi kerja: kategori 1 = **keluarga utuh**. Kategori 2 (9 siswa, pola mencampur) dan kategori 5 (4 siswa, tanpa label) digabung ke **lainnya**. Sisa kategori 3 & 4 dipakai sesuai label aslinya. 3 versi coding disiapkan untuk sensitivity analysis, namun BELUM dijalankan (fase robustness terpisah).
 - **Ambang `y_biner`.** 2,5 dipilih sebagai titik tengah antara pilihan "kadang-kadang" (2) dan "sering" (3) — siswa dengan rata-rata skor di atasnya masuk kategori cemas tinggi; ambang alternatif 2,0 dan 2,3 menghasilkan 42,2% dan 25,8% positif — dipakai sebagai bahan diskusi bila dosen ingin prevalensi lebih tinggi.
 - **Temuan penting — `f_sosial` berbeda dari analisis sebelumnya.** Rata-rata blok sosial TANPA reverse-scoring adalah **2,15** (angka yang dipakai di analisis deskriptif & regresi lama), sedangkan pipeline kita memakai mean **2,74** setelah `SOSIAL3` di-reverse. Item itu berbunyi *"Saya merasa TIDAK tertekan ketika mengalami masalah…"* — arahnya berlawanan, sehingga skor sebelumnya sempat menyamakan "sering tidak tertekan" dengan "tinggi tekanan sosial". Karena faktor sosial menjadi prediktor terkuat di regresi lama (β=0,241), temuan itu perlu dihitung ulang. Pipeline ini sengaja mengikuti aturan `config.REVERSE_ITEMS` (reverse = benar).
-- **Baris duplikat.** Dua baris identik di seluruh kolom tidak dihapus (N tetap 306) agar selaras dengan analisis deskriptif sebelumnya; ditandai saat audit data. Implikasi evaluasi: pasangan kembar bisa terbagi ke train dan test (bias optimis <0,5%).
+- **Baris duplikat.** Dua baris identik di seluruh kolom tidak dihapus (N tetap 306) agar selaras dengan analisis deskriptif sebelumnya; ditandai saat audit data: row_id 53 dan 55, y = 1,65. Implikasi evaluasi (terukur, bukan perkiraan): pasangan kembar terpisah ke data latih dan data uji pada 10 dari 30 model CV, dan tanpa kedua baris itu MAE CV menjadi 0,2179 bukan 0,2165 — optimisme **0,0013 (0,6%)**.
 
 ## Pemakaian Etis
 

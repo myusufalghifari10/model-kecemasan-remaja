@@ -1,0 +1,120 @@
+{
+  "versi": "manifest_v1",
+  "catatan": "sha256 berkas publik + privat (bila ada) dan angka utama yang dilaporkan. Kalau angka berubah, sha256 berkas sumbernya harus ikut berubah.",
+  "angka_utama": {
+    "cv": {
+      "n_baris": 306,
+      "mae": 0.2165207355770155,
+      "mae_ci95": [
+        0.19585796812217088,
+        0.23704683964742224
+      ],
+      "r2": 0.630483826303162,
+      "akurasi_kategori": 0.6830065359477124,
+      "qwk": 0.6466680951360617
+    },
+    "test_68": {
+      "mae_raw": 0.2406653383851332,
+      "mae_berbobot": 0.22303426876156812,
+      "r2": 0.6883715087677621,
+      "akurasi_kategori": 0.7058823529411765,
+      "qwk": 0.7300516077808654
+    },
+    "produksi": {
+      "n_bag": 6,
+      "mae_in_sample_bag": 0.12877312794362614,
+      "r2_in_sample_bag": 0.8502339779819784,
+      "kategori_ambang": [
+        1.75,
+        2.5,
+        3.25
+      ]
+    },
+    "regresi_9_faktor_protokol_sama": {
+      "mae_cv": 0.24686083867744366,
+      "r2_cv": 0.5336469463171802,
+      "r2_in_sample": 0.5658202435343489,
+      "aturan_pemilihan": "MAE CV terendah di antara 16 kandidat"
+    }
+  },
+  "berkas": {
+    "src/train.py": {
+      "sha256": "034f199ff722f70630ecab0bdef3a5c4d88ca34b387426a6ab25cb5954757e3a",
+      "byte": 46838
+    },
+    "src/config.py": {
+      "sha256": "3ea7354496f367d9f4e4ede92325cc73b0524f5a54e48adace17ef5242893546",
+      "byte": 2086
+    },
+    "src/build_features.py": {
+      "sha256": "5c857177957c3674687ca1ad204a8fa93845d1aa8179c1ab34b08464be1cb3e2",
+      "byte": 7428
+    },
+    "src/bandingkan_regresi.py": {
+      "sha256": "f834f5ce011273363cf1dae3af2e530a8e36b6fa8a04c0cf5572218857cf61a9",
+      "byte": 7664
+    },
+    "src/buat_manifest.py": {
+      "sha256": "a0b0890aaa9c682ceac12d5a1d8bd891631181b72e9ee1f32905bd90465386d8",
+      "byte": 4417
+    },
+    "requirements.txt": {
+      "sha256": "b37165828f32dc8e43082f9dcec6c35e0804473d875f28c560d99ff7c0c910ef",
+      "byte": 203
+    },
+    "README.md": {
+      "sha256": "a6fec9ab767f404aacb688128e5f1b13fd1d3a5a79540364f0d032ddf31edc3f",
+      "byte": 12991
+    },
+    "docs/codebook.md": {
+      "sha256": "cb2099b59092e5d69397a913d786d2039e7f6e40d83b1cc5752d25f9d40f3392",
+      "byte": 6647
+    },
+    "docs/Laporan-Model-Kecemasan-Remaja.docx": {
+      "sha256": "8d420f729988eb9c4216192fbd41655945b757cfdfeed5bab8d50eebbbbf1b32",
+      "byte": 21921
+    },
+    "data/split_v1.json": {
+      "sha256": "8baec652ae3c0db30d694b6a67597dc725711593bd404e18b0c01d06fd3910a6",
+      "byte": 5700
+    },
+    "outputs/model/cv.json": {
+      "sha256": "fe158f6b0ac43b6e400a0afa8e1d2bf672a8d9cfc2799ef7d75305ba1868eeaa",
+      "byte": 5884
+    },
+    "outputs/model/per_bin.csv": {
+      "sha256": "34358322760cb6ba37393e03575040d7cc71cd915fae91eae7fb98d758a46466",
+      "byte": 906
+    },
+    "outputs/model/test_1d5f63ef.json": {
+      "sha256": "7b921e59896192eee49255cda379056b499f152d9d528c53c39d9f7f903bd6ee",
+      "byte": 5706
+    },
+    "outputs/model/produksi.json": {
+      "sha256": "75a1c419b16d52b17dedb24e295d52d526a1e20a043e41e1345d150c00f60732",
+      "byte": 3311
+    },
+    "outputs/model/perbandingan_regresi.json": {
+      "sha256": "d5a73a67037894892578c3ac079e6570437530d394a52553ef14391809c9f5d7",
+      "byte": 15666
+    },
+    "outputs/model/model_bag.joblib": {
+      "sha256": "8505f91dc55b71d91189559f46cadf533232c423a373945b64b89a865994fb90",
+      "byte": 6023733
+    }
+  },
+  "privat": {
+    "data/features.parquet": {
+      "sha256": "5b2259bc23029b62058e1ebd1c45c1097fb144964aa3d6b1400b47db36a2fc3a",
+      "byte": 62823
+    },
+    "outputs/model/oof.csv": {
+      "sha256": "ad008a09886d0411a00c3885beefb1b78a9b64ac40d01589366424e8cf795a0c",
+      "byte": 8816
+    },
+    "data/raw/INPUT DATA  (1).sav": {
+      "sha256": "385f9463c4ee49774dd62f76c9ba2798440951c0b4b1d55180b6a506a8f619f1",
+      "byte": 64033
+    }
+  }
+}

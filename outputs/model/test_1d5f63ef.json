@@ -1,6 +1,6 @@
 {
   "versi": "test_v1",
-  "dibuat": "2026-10-28T18:30:12",
+  "dibuat": "2026-10-28T23:33:29",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -34,7 +34,67 @@
   "kategori": {
     "akurasi": 0.7058823529411765,
     "qwk": 0.7300516077808654,
-    "meleset_2_tingkat_atau_lebih": 0
+    "meleset_2_tingkat_atau_lebih": 0,
+    "tabel_silang": {
+      "Rendah": {
+        "Rendah": 17,
+        "Sedang": 5,
+        "Tinggi": 0,
+        "Sangat Tinggi": 0
+      },
+      "Sedang": {
+        "Rendah": 5,
+        "Sedang": 26,
+        "Tinggi": 1,
+        "Sangat Tinggi": 0
+      },
+      "Tinggi": {
+        "Rendah": 0,
+        "Sedang": 6,
+        "Tinggi": 5,
+        "Sangat Tinggi": 0
+      },
+      "Sangat Tinggi": {
+        "Rendah": 0,
+        "Sedang": 0,
+        "Tinggi": 3,
+        "Sangat Tinggi": 0
+      }
+    },
+    "per_kategori": [
+      {
+        "kategori": "Rendah",
+        "n": 22,
+        "tepat": 17,
+        "recall": 0.7727272727272727,
+        "bias": -0.1197516865934156,
+        "mae": 0.19580691451684212
+      },
+      {
+        "kategori": "Sedang",
+        "n": 32,
+        "tepat": 26,
+        "recall": 0.8125,
+        "bias": 0.02191968112979495,
+        "mae": 0.21406947119540343
+      },
+      {
+        "kategori": "Tinggi",
+        "n": 11,
+        "tepat": 5,
+        "recall": 0.45454545454545453,
+        "bias": 0.3218380665258616,
+        "mae": 0.33712726471789617
+      },
+      {
+        "kategori": "Sangat Tinggi",
+        "n": 3,
+        "tepat": 0,
+        "recall": 0.0,
+        "bias": 0.49962263355625486,
+        "mae": 0.49962263355625486
+      }
+    ]
   },
   "per_bin": [
     {
@@ -130,9 +190,9 @@
   ],
   "disclosure": {
     "cv_bukan_test": "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka itu estimasi populasi, BUKAN angka uji.",
-    "test_konfirmasi": "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, tidak dipakai memilih model, base, atau parameter apa pun.",
+    "test_konfirmasi": "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, dan angka test berasal dari model yang hanya dilatih di 238 siswa. Batasnya harus disebut: pemilihan 6 model produksi (PEMILIHAN_BAG) memakai MAE out-of-fold yang dihitung pada lipatan seluruh 306 siswa, jadi 68 siswa ikut berperan pada pemilihan artefak \u2014 68 bukan himpunan yang sama sekali belum tersentuh.",
     "seleksi_base": "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, ridge1000} memakai CV di 306 siswa, bukan data uji.",
-    "bin_tipis": "Bin 10 hanya 3 siswa (bin 8: 9, bin 9: 6). Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
-    "privacy": "oof.csv memuat y per siswa dan bersifat lokal: jangan di-commit. Pola .gitignore yang dipakai: outputs/model/oof.csv"
+    "bin_tipis": "Jumlah per bin bergantung pada subhimpunan yang dievaluasi (populasi 306: bin 10 = 3 siswa, bin 9 = 6, bin 8 = 9; pada 68 siswa uji bin 8 dan bin 9 masing-masing 3). Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
+    "privacy": "oof.csv memuat y per siswa dan prediksi.csv memuat skor per siswa; keduanya lokal dan tidak boleh di-commit. Pola .gitignore: outputs/model/oof.csv dan outputs/model/prediksi*.csv"
   }
 }

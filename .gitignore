@@ -4,7 +4,9 @@ data/features.parquet
 
 # Artefak model dan prediksi per siswa
 outputs/model/oof.csv
+outputs/model/prediksi*.csv
 outputs/model/*.ubj
+outputs/model/*.tmp
 
 # Python
 __pycache__/

@@ -18,7 +18,9 @@ DUA ANGKA YANG TIDAK BOLEH DICAMPUR:
                   bin). Karena himpunan evaluasi = populasi, angkanya estimasi POPULASI;
                   68 siswa uji ikut di dalam CV, jadi ini BUKAN angka uji.
   * --mode test : melatih hanya di 238 siswa split v1 lalu menguji di 68 siswa. Angka ini
-                  dilaporkan sekali sebagai konfirmasi dan tidak dipakai memilih apa pun.
+                  dilaporkan sekali sebagai konfirmasi. Modelnya tidak pernah melihat 68
+                  siswa, tetapi 68 siswa sempat ikut berperan pada pemilihan 6 model
+                  produksi — lihat DISCLOSURE["test_konfirmasi"].
 
 Mode:
   --mode check-split : verifikasi split terkunci (sha 1d5f63efb7d61488, 238/68)
@@ -110,17 +112,23 @@ DISCLOSURE = {
         "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka "
         "itu estimasi populasi, BUKAN angka uji."),
     "test_konfirmasi": (
-        "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, tidak "
-        "dipakai memilih model, base, atau parameter apa pun."),
+        "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, dan angka "
+        "test berasal dari model yang hanya dilatih di 238 siswa. Batasnya harus disebut: "
+        "pemilihan 6 model produksi (PEMILIHAN_BAG) memakai MAE out-of-fold yang dihitung "
+        "pada lipatan seluruh 306 siswa, jadi 68 siswa ikut berperan pada pemilihan "
+        "artefak — 68 bukan himpunan yang sama sekali belum tersentuh."),
     "seleksi_base": (
         "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, "
         "ridge1000} memakai CV di 306 siswa, bukan data uji."),
     "bin_tipis": (
-        "Bin 10 hanya 3 siswa (bin 8: 9, bin 9: 6). Tabel per bin dilaporkan dengan flag "
-        "n<=5 dan bin tersebut tidak boleh diranking atau diklaim."),
+        "Jumlah per bin bergantung pada subhimpunan yang dievaluasi (populasi 306: bin 10 = "
+        "3 siswa, bin 9 = 6, bin 8 = 9; pada 68 siswa uji bin 8 dan bin 9 masing-masing 3). "
+        "Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking "
+        "atau diklaim."),
     "privacy": (
-        "oof.csv memuat y per siswa dan bersifat lokal: jangan di-commit. Pola .gitignore "
-        "yang dipakai: outputs/model/oof.csv"),
+        "oof.csv memuat y per siswa dan prediksi.csv memuat skor per siswa; keduanya lokal "
+        "dan tidak boleh di-commit. Pola .gitignore: outputs/model/oof.csv dan "
+        "outputs/model/prediksi*.csv"),
 }
 
 
@@ -145,9 +153,9 @@ def _mae(y: np.ndarray, p: np.ndarray) -> float:
     return float(np.mean(np.abs(y - p)))
 
 
-def _encode(train: pd.DataFrame, test: pd.DataFrame, fitur: str):
-    """Encoder kategorikal di-fit HANYA di `train`; `fitur`="76" berarti item ikut masuk."""
-    num = C.NUMERIC_FEATURES + (ITEM_COLS if fitur == "76" else [])
+def _encode(train: pd.DataFrame, test: pd.DataFrame):
+    """Encoder kategorikal di-fit HANYA di `train` (dipakai untuk evaluasi CV dan test)."""
+    num = C.NUMERIC_FEATURES + ITEM_COLS
     cat = C.CATEGORICAL_FEATURES
     enc = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
     xtr = np.hstack([train[num].to_numpy(float), enc.fit_transform(train[cat])])
@@ -158,9 +166,13 @@ def _encode(train: pd.DataFrame, test: pd.DataFrame, fitur: str):
 def bobot(y_train: np.ndarray) -> np.ndarray:
     """w = min(CAP, sqrt(ref/n_bin)) per bin; ref = median bin pada y_train; rata-rata 1."""
     y = np.asarray(y_train, float)
+    if len(y) == 0:
+        _fail("tidak ada baris latih untuk menghitung bobot")
+    if (y < BIN_EDGES[0]).any() or (y > BIN_EDGES[-1]).any():
+        _fail(f"target di luar rentang bin {BIN_EDGES[0]:.2f}-{BIN_EDGES[-1]:.2f} "
+              f"(data {y.min():.2f}-{y.max():.2f}) — bobot per bin tidak terdefinisi")
     counts, _ = np.histogram(y, bins=BIN_EDGES)
     aktif = counts > 0
-    assert aktif.any(), "semua bin kosong di fold latih"
     ref = float(np.median(counts[aktif]))
     w_bin = np.ones(len(counts), float)
     w_bin[aktif] = np.minimum(WEIGHT_CAP, np.sqrt(ref / counts[aktif]))
@@ -228,6 +240,18 @@ def muat_split(df: pd.DataFrame) -> dict:
     if sum(int(d["per_bin"][str(b)]["n_test"]) for b in range(1, 11)) != len(test_ids):
         _fail("jumlah per_bin.n_test tidak sama dengan jumlah test_row_id")
 
+    # n_populasi adalah setengah lain dari setiap bobot populasi. Tanpa pemeriksaan ini,
+    # per_bin.n_populasi yang salah menggeser MAE berbobot tanpa peringatan: menukar bin 1
+    # dan bin 3 saja (total tetap 306, lolos batas wajar) mengubah 0,2230 menjadi 0,2503.
+    n_pop_aktual = {b: 0 for b in range(1, 11)}
+    for yv in y_map.values():
+        n_pop_aktual[int(_bin(yv))] += 1
+    for b in range(1, 11):
+        n_json = int(d["per_bin"][str(b)]["n_populasi"])
+        if n_json != n_pop_aktual[b]:
+            _fail(f"per_bin bin {b} di split JSON: n_populasi={n_json}, "
+                  f"aktual di features.parquet={n_pop_aktual[b]}")
+
     d["_test_ids"] = test_ids
     d["_train_ids"] = train_ids
     d["_sha_ids"] = sha_ids
@@ -259,14 +283,21 @@ def _mae_berbobot(y: np.ndarray, p: np.ndarray, w: np.ndarray) -> float:
     return float(np.sum(w * np.abs(np.asarray(y, float) - np.asarray(p, float))) / np.sum(w))
 
 
-def _preprocessor(df_train: pd.DataFrame) -> dict:
-    """Encoder kategorikal di-fit di 238 train saja (disimpan untuk deployment)."""
+def _preprocessor(df: pd.DataFrame) -> dict:
+    """Encoder artefak deployment: di-fit pada seluruh baris yang dikirim (306).
+
+    Berbeda dari evaluasi: di CV encoder di-fit per lipatan pada 244 baris latih saja
+    (_encode), supaya tidak ada informasi dari baris yang sedang dinilai. Untuk artefak
+    yang akan memprediksi siswa baru, 306 baris itu memang data yang boleh dipakai, dan
+    yang disimpan hanya daftar kategori + rentang nilai, tanpa target.
+    """
     enc = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
-    enc.fit(df_train[C.CATEGORICAL_FEATURES])
+    enc.fit(df[C.CATEGORICAL_FEATURES])
     return {"encoder": enc,
             "num": C.NUMERIC_FEATURES + ITEM_COLS,
             "cat": list(C.CATEGORICAL_FEATURES),
-            "fitur": "76"}
+            "rentang": {c: [float(df[c].min()), float(df[c].max())]
+                        for c in C.NUMERIC_FEATURES + ITEM_COLS}}
 
 
 def _transform(pre: dict, df: pd.DataFrame) -> np.ndarray:
@@ -392,7 +423,11 @@ def _ci_mae(y: np.ndarray, p: np.ndarray, n_boot: int = N_BOOT, seed: int = SEED
 
 
 def _metrik_kategori(y: np.ndarray, pred: np.ndarray) -> dict:
-    """Akurasi kategori 4 tingkat + tabel silang + rincian per kategori."""
+    """Akurasi kategori 4 tingkat + tabel silang + rincian per kategori.
+
+    Konvensi tanda `bias` = rata-rata (y - pred), SAMA dengan _per_bin, supaya bias
+    positif berarti model menaksir terlalu rendah.
+    """
     ka = _kategori(y)
     ks = _kategori(pred)
     pos = {k: i for i, k in enumerate(KATEGORI_LABEL)}
@@ -411,13 +446,15 @@ def _metrik_kategori(y: np.ndarray, pred: np.ndarray) -> dict:
             "kategori": k, "n": n,
             "tepat": int((ks[m] == k).sum()),
             "recall": float((ks[m] == k).mean()),
-            "bias": float((pred[m] - y[m]).mean()),
+            "bias": float((y[m] - pred[m]).mean()),
             "mae": float(np.abs(pred[m] - y[m]).mean()),
         })
     return {
         "akurasi": float((ia == ib).mean()),
         "qwk": float(cohen_kappa_score(ia, ib, weights="quadratic")),
         "meleset_2_tingkat_atau_lebih": int((selisih >= 2).sum()),
+        "tabel_silang": silang,
+        "per_kategori": rinci,
     }
 
 
@@ -474,7 +511,7 @@ def run_cv(df: pd.DataFrame, seed: int) -> None:
 
     def fp_model(tr, va):
         # Encoder di-fit hanya pada data latih lipatan (lihat _encode).
-        xt, xv = _encode(df.iloc[tr], df.iloc[va], "76")
+        xt, xv = _encode(df.iloc[tr], df.iloc[va])
         return latih_pred(params, xt, y[tr], bobot(y[tr]), xv)
 
     oof = akumulasi_bag(folds, n, fp_model)
@@ -543,7 +580,7 @@ def run_test(df: pd.DataFrame, force: bool = False) -> None:
     ytr = train[C.TARGET_CONT].to_numpy(float)
     yte = test[C.TARGET_CONT].to_numpy(float)
     bte = _bin(yte)
-    xt, xv = _encode(train, test, "76")      # encoder hanya di-fit di 238
+    xt, xv = _encode(train, test)      # encoder hanya di-fit di 238
     p = latih_pred(params, xt, ytr, bobot(ytr), xv)
 
     w_bin = _bobot_populasi(sp)
@@ -588,37 +625,47 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
               "membawa angka CV yang sah)")
     cv = json.loads(CV_JSON.read_text(encoding="utf-8"))
     params = muat_params()
+    if cv.get("seed") != SEED or cv.get("model", {}).get("parameter") != params:
+        _fail(f"{CV_JSON.name} berasal dari seed/parameter lain — jalankan ulang --mode cv "
+              "supaya angka CV yang dilaporkan cocok dengan artefak ini")
     y = df[C.TARGET_CONT].to_numpy(float)
     pre = _preprocessor(df)
     x = _transform(pre, df)
-    x_cek, _ = _encode(df, df, "76")
+    x_cek, _ = _encode(df, df)
     if x.shape != x_cek.shape or not np.allclose(x, x_cek):
         _fail("preprocessor tersimpan tidak identik dengan _encode — jangan lanjut")
 
-    # BAG: satu model per repeat, masing-masing dilatih pada 5/6 siswa dari pengacakan
-    # berbeda, lalu prediksi dirata-rata. Konstruksi ini sama dengan bag di --mode cv.
+    # BAG: 6 model dari 6 lipatan berbeda, masing-masing dilatih pada 244 dari 306 siswa
+    # (4/5), lalu prediksi dirata-ratakan. Komposisinya ada di PEMILIHAN_BAG: repeat
+    # 1,2,3,3,4,5 (dua model dari repeat 3), jadi BUKAN satu model per repeat.
     folds = _daftar_fold(df, SEED)
     models = []
     for i in PEMILIHAN_BAG:
         tr = folds[i][0]
         models.append(latih(params, x[tr], y[tr], bobot(y[tr])))
-    assert len(models) == N_BAG, f"bag harus {N_BAG} model, ada {len(models)}"
+    if len(models) != N_BAG:
+        _fail(f"bag harus {N_BAG} model, ada {len(models)}")
     pred_bag = np.mean(np.vstack([pred(m, x) for m in models]), axis=0)
     if not np.isfinite(pred_bag).all():
         _fail("prediksi bag mengandung NaN/inf")
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    # Tulis ke berkas sementara, verifikasi, baru ganti artefak lama: kalau verifikasi gagal,
+    # model_bag.joblib yang sudah dipakai tidak tertimpa artefak yang belum diuji.
+    tmp = MODEL_JOBLIB.with_name(MODEL_JOBLIB.name + ".tmp")
     joblib.dump({"models": models, "preprocessor": pre, "parameter": params,
                  "pls_components": int(PLS_COMPONENTS), "n_bag": int(N_BAG),
-                 "seed": int(SEED), "versi": "bag_v1"}, MODEL_JOBLIB)
+                 "seed": int(SEED), "versi": "bag_v1"}, tmp)
 
-    simpan = joblib.load(MODEL_JOBLIB)
+    simpan = joblib.load(tmp)
     if len(simpan["models"]) != N_BAG or simpan["pls_components"] != PLS_COMPONENTS:
         _fail("isi joblib tidak sesuai")
     pred_muat = np.mean(np.vstack([pred(m, x) for m in simpan["models"]]), axis=0)
     selisih = float(np.max(np.abs(pred_muat - pred_bag)))
     if selisih > 1e-9:
+        tmp.unlink(missing_ok=True)
         _fail(f"round-trip joblib meleset {selisih:.2e} > 1e-9")
+    tmp.replace(MODEL_JOBLIB)
 
     hasil = {
         "versi": "produksi_v1",
@@ -689,13 +736,22 @@ def _kategori(skor: np.ndarray) -> np.ndarray:
 
 
 def _siapkan_input(pre: dict, path_input: Path) -> tuple[pd.DataFrame, np.ndarray]:
-    """Baca dan validasi data siswa baru, kembalikan (tabel asli, matriks 88 kolom)."""
-    if not path_input.exists():
-        _fail(f"berkas input tidak ada: {path_input}")
-    baru = (pd.read_parquet(path_input) if path_input.suffix.lower() == ".parquet"
-            else pd.read_csv(path_input))
+    """Baca dan validasi data siswa baru, kembalikan (tabel asli, matriks 88 kolom).
+
+    Semua kesalahan yang bisa dibuat pemakai (berkas kosong, koma desimal, kolom hilang,
+    kategori salah ketik, nilai tak hingga) harus berhenti di sini dengan pesan [model],
+    bukan traceback, dan tidak boleh menghasilkan skor yang salah secara senyap.
+    """
+    if not path_input.is_file():
+        _fail(f"berkas input tidak ada atau bukan berkas: {path_input}")
+    try:
+        baru = (pd.read_parquet(path_input) if path_input.suffix.lower() == ".parquet"
+                else pd.read_csv(path_input))
+    except Exception as exc:                  # semua kegagalan baca -> satu pesan bersih
+        _fail(f"gagal membaca {path_input.name}: {type(exc).__name__}: {exc}")
     if len(baru) == 0:
         _fail("input kosong")
+
     wajib = pre["num"] + pre["cat"]
     kurang = [c for c in wajib if c not in baru.columns]
     if kurang:
@@ -703,7 +759,45 @@ def _siapkan_input(pre: dict, path_input: Path) -> tuple[pd.DataFrame, np.ndarra
     kosong = [c for c in wajib if baru[c].isna().any()]
     if kosong:
         _fail(f"ada nilai kosong di kolom: {kosong[:5]}")
-    return baru, _transform(pre, baru)
+
+    # Angka: harus terbaca sebagai angka dan berhingga. Koma desimal gaya Indonesia ("3,5")
+    # adalah kasus paling sering, jadi pesannya menyebut kolom dan contoh nilainya.
+    bersih = baru.copy()
+    for c in pre["num"]:
+        nilai = pd.to_numeric(baru[c], errors="coerce").to_numpy(float)
+        rusak = ~np.isfinite(nilai)
+        if rusak.any():
+            contoh = baru[c].to_numpy()[rusak][:3].tolist()
+            _fail(f"kolom '{c}' berisi nilai yang bukan angka berhingga: {contoh} — "
+                  "periksa koma desimal (pakai 3.5), sel kosong, dan nilai inf")
+        bersih[c] = nilai
+
+    # Kategori: level tak dikenal tidak boleh berubah jadi 16 kolom nol secara senyap,
+    # karena skor tetap keluar dan terlihat sah (mis. 'Teknik Nuklir' atau 'PRIA').
+    z_cat = pre["encoder"].transform(bersih[pre["cat"]])
+    pos = 0
+    for c, level in zip(pre["cat"], pre["encoder"].categories_):
+        blok = z_cat[:, pos:pos + len(level)]
+        pos += len(level)
+        asing = sorted(set(baru.loc[blok.sum(axis=1) == 0, c].astype(str)))
+        if asing:
+            _fail(f"kolom '{c}' berisi nilai di luar data latih: {asing[:5]} — "
+                  f"nilai yang sah: {[str(v) for v in level]}")
+
+    rentang = pre.get("rentang")
+    if rentang:
+        luar = {}
+        for c, (lo, hi) in rentang.items():
+            v = bersih[c].to_numpy(float)
+            n_luar = int(((v < lo) | (v > hi)).sum())
+            if n_luar:
+                luar[c] = n_luar
+        if luar:
+            print("[model] PERINGATAN: nilai di luar rentang data latih pada "
+                  + ", ".join(f"{c} ({n} baris)" for c, n in list(luar.items())[:5])
+                  + " — skor baris itu di luar pengalaman model")
+
+    return baru, _transform(pre, bersih)
 
 
 def run_predict(path_input: Path, path_output: Path | None = None,
@@ -718,11 +812,20 @@ def run_predict(path_input: Path, path_output: Path | None = None,
         _fail(f"{MODEL_JOBLIB.name} belum ada — jalankan --mode final dulu")
     if top < 1:
         _fail("--top minimal 1")
+    out = path_output or PREDIKSI_CSV
+    if out.suffix.lower() != ".csv":
+        _fail(f"--output harus berkas .csv, bukan {out.name}")
+    terlarang = {p.resolve() for p in (MODEL_JOBLIB, CV_JSON, OOF_CSV, PER_BIN_CSV,
+                                      PRODUKSI_JSON)}
+    if out.resolve() in terlarang:
+        _fail(f"--output tidak boleh menimpa artefak model: {out}")
 
     art = joblib.load(MODEL_JOBLIB)
     pre = art["preprocessor"]
     baru, x = _siapkan_input(pre, path_input)
     names = list(pre["num"]) + list(pre["encoder"].get_feature_names_out(pre["cat"]))
+    if top > len(names):
+        _fail(f"--top {top} melebihi jumlah fitur model ({len(names)})")
 
     skor = np.mean(np.vstack([pred(m, x) for m in art["models"]]), axis=0)
     if not np.isfinite(skor).all():
@@ -750,8 +853,9 @@ def run_predict(path_input: Path, path_output: Path | None = None,
         hasil[f"fitur_{i + 1}"] = [names[j] for j in urut[:, i]]
         hasil[f"kontribusi_{i + 1}"] = np.round(K[np.arange(len(K)), urut[:, i]], 4)
 
-    out = path_output or PREDIKSI_CSV
     out.parent.mkdir(parents=True, exist_ok=True)
+    if out.exists():
+        print(f"[model] menimpa berkas keluaran sebelumnya: {out}")
     hasil.to_csv(out, index=False)
 
     kat = _kategori(skor)
@@ -819,7 +923,33 @@ def _self_test() -> None:
     m2 = latih(params, xs, ys, ws)
     assert np.max(np.abs(pred(m, xs) - pred(m2, xs))) < 1e-12, "model tidak deterministik"
 
-    # (e) split terkunci — butuh data mentah, jadi dilewati kalau matriks fitur tidak ada
+    # (e) batas kategori: 1,75 / 2,50 / 3,25 milik tingkat BAWAH (Rendah/Sedang/Tinggi)
+    batas = np.array([1.0, 1.75, 1.7501, 2.50, 2.5001, 3.25, 3.2501, 3.5])
+    dapat = list(_kategori(batas))
+    harap = ["Rendah", "Rendah", "Sedang", "Sedang", "Tinggi", "Tinggi",
+             "Sangat Tinggi", "Sangat Tinggi"]
+    if dapat != harap:
+        _fail(f"batas kategori salah: {dapat} (harus {harap})")
+
+    # (f) kontribusi fitur (PLS linier + TreeSHAP) menjumlah tepat ke prediksi
+    k, b0 = _kontribusi(m, xs)
+    if k.shape != (60, 6):
+        _fail(f"bentuk kontribusi salah: {k.shape} (harus (60, 6))")
+    sisa_kontribusi = float(np.max(np.abs(k.sum(axis=1) + b0 - p)))
+    if sisa_kontribusi > 1e-5:
+        _fail(f"kontribusi tidak menjumlah ke prediksi (selisih {sisa_kontribusi:.2e})")
+
+    # (g) oracle luar: model yang dilatih pada target acak tidak boleh mengalahkan
+    #     konstanta median pada baris yang tidak dilihatnya. Kalau menang, ada kebocoran.
+    y_acak = rs.permutation(ys)
+    m_acak = latih(params, xs[:40], y_acak[:40], ws[:40])
+    mae_acak = _mae(y_acak[40:], pred(m_acak, xs[40:]))
+    mae_konst = _mae(y_acak[40:], np.full(20, float(np.median(y_acak[:40]))))
+    if mae_acak <= 0.9 * mae_konst:
+        _fail(f"model mengalahkan konstanta pada target acak ({mae_acak:.3f} vs "
+              f"{mae_konst:.3f}) — ada kebocoran atau target tertukar")
+
+    # (h) split terkunci — butuh data mentah, jadi dilewati kalau matriks fitur tidak ada
     #     (mis. pada hasil clone: data per siswa sengaja tidak ikut repo).
     if C.DATA_FEATURES.exists():
         run_check_split(muat_data())
@@ -828,7 +958,9 @@ def _self_test() -> None:
         pesan_split = "split terkunci DILEWATI (data/features.parquet tidak ada)"
 
     print("SELF-TEST OK: bentuk base (n,), pred == base + xgb, XGB pada residual, "
-          "bag OOF menutup semua baris, determinisme PLS1, " + pesan_split)
+          "bag OOF menutup semua baris, determinisme PLS1, batas kategori 1,75/2,50/3,25, "
+          "kontribusi fitur menjumlah ke prediksi, target acak tidak dipelajari, "
+          + pesan_split)
 
 
 # ---------------------------------------------------------------- main
