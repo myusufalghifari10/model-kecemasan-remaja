@@ -30,6 +30,12 @@ Prediksi akhir = `base + XGB`.
 Ketiga baris itu saja yang disimpan di `cv.json` dan `test_*.json`, ditambah tabel per bin
 untuk menunjukkan kelemahan di ekor; metrik lain dihitung tidak dipersistenkan.
 
+Artefak yang dipakai untuk inference adalah bag 6 model di `model_bag.joblib`. Pada 306
+siswa yang sudah dilihatnya, MAE-nya **0,1336** (R² 0,8387) — angka ini ikut dicatat di
+`produksi.json` hanya sebagai penanda artefak, **bukan** performa. Harapan performa untuk
+siswa baru tetap **0,2165**, karena pada CV setiap prediksi selalu berasal dari 6 model
+yang belum pernah melihat siswa itu.
+
 Sebagai pembanding, analisis regresi berganda sebelumnya (9 faktor) mencapai R² 0,398 secara
 in-sample. Model ini mencapai R² 0,6305 secara **out-of-fold**, tetapi dengan 88 prediktor
 — bukan perbandingan setara, hanya penanda besaran.

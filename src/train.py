@@ -622,9 +622,16 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
         "kategori_label": list(KATEGORI_LABEL),
         "mae_cv_bag": cv["mae"],
         "mae_cv_ci95": cv["mae_ci95"],
+        "mae_in_sample_bag": float(np.abs(y - pred_bag).mean()),
+        "r2_in_sample_bag": float(1 - np.sum((y - pred_bag) ** 2)
+                                  / np.sum((y - y.mean()) ** 2)),
         "prediksi": {"in_sample": True,
-                     "catatan": ("prediksi bag pada 306 baris yang SAMA dengan data latih; "
-                                 "estimasi out-of-sample = mae_cv_bag"),
+                     "catatan": ("Artefak INI dipakai untuk inference, dan angka in-sample-nya "
+                                 "(mae_in_sample_bag) hanya menggambarkan data yang sudah "
+                                 "dilihatnya, bukan performa pada siswa baru. Harapan performa "
+                                 "untuk siswa baru tetap mae_cv_bag = 0,2165, karena pada CV "
+                                 "tiap prediksi selalu berasal dari 6 model yang tidak melihat "
+                                 "siswa itu."),
                      "mean": float(pred_bag.mean()), "sd": float(pred_bag.std()),
                      "min": float(pred_bag.min()), "max": float(pred_bag.max())},
         "round_trip_selisih_maks": selisih,
@@ -638,6 +645,8 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
     print(f"\n[model] model produksi: BAG {N_BAG} model, {len(df)} siswa x {x.shape[1]} fitur")
     print(f"     MAE CV (populasi 306) {cv['mae']:.4f} | R2 {cv['r2']:.4f}")
     print(f"     round-trip joblib {selisih:.1e} | {MODEL_JOBLIB.relative_to(C.ROOT)}")
+    print(f"     MAE in-sample artefak {float(np.abs(y - pred_bag).mean()):.4f} "
+          f"(bukan estimasi performa — data ini sudah dilihat model)")
 
 
 # ---------------------------------------------------------------- predict (data baru)

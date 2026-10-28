@@ -1,6 +1,6 @@
 {
   "versi": "produksi_v1",
-  "dibuat": "2026-10-28T18:30:14",
+  "dibuat": "2026-10-28T18:37:07",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -37,9 +37,11 @@
     0.19585796812217088,
     0.23704683964742224
   ],
+  "mae_in_sample_bag": 0.13363320279212806,
+  "r2_in_sample_bag": 0.8386804833503083,
   "prediksi": {
     "in_sample": true,
-    "catatan": "prediksi bag pada 306 baris yang SAMA dengan data latih; estimasi out-of-sample = mae_cv_bag",
+    "catatan": "Artefak INI dipakai untuk inference, dan angka in-sample-nya (mae_in_sample_bag) hanya menggambarkan data yang sudah dilihatnya, bukan performa pada siswa baru. Harapan performa untuk siswa baru tetap mae_cv_bag = 0,2165, karena pada CV tiap prediksi selalu berasal dari 6 model yang tidak melihat siswa itu.",
     "mean": 1.9793143018872035,
     "sd": 0.4241233686160338,
     "min": 1.0924304621990872,
