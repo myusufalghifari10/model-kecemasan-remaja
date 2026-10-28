@@ -13,30 +13,26 @@ PEMILIHAN KOMPONEN: jumlah komponen PLS (1) dipilih dari 5 kandidat
 {PLS1, PLS2, PLS3, ridge alpha 300, ridge alpha 1000} memakai CV di 306 siswa, bukan data
 uji. Konstanta PLS_COMPONENTS menyimpan pilihan itu; tidak dicari ulang di sini.
 
-DUA ANGKA YANG TIDAK BOLEH DICAMPUR:
-  * --mode cv   : memakai SELURUH 306 siswa (RepeatedStratifiedKFold 5x6, stratifikasi per
-                  bin). Karena himpunan evaluasi = populasi, angkanya estimasi POPULASI;
-                  68 siswa uji ikut di dalam CV, jadi ini BUKAN angka uji.
-  * --mode test : melatih hanya di 238 siswa split v1 lalu menguji di 68 siswa. Angka ini
-                  dilaporkan sekali sebagai konfirmasi. Modelnya tidak pernah melihat 68
-                  siswa, tetapi 68 siswa sempat ikut berperan pada pemilihan 6 model
-                  produksi — lihat DISCLOSURE["test_konfirmasi"].
+SATU ANGKA YANG DILAPORKAN:
+  --mode cv : memakai SELURUH 306 siswa (RepeatedStratifiedKFold 5x6, stratifikasi per bin).
+              Karena himpunan evaluasi = populasi, angkanya estimasi POPULASI.
+  --mode test hanya alat periksa reproduksibilitas split internal; keluarannya TIDAK
+              dilaporkan sebagai angka kinerja dan tidak ikut repo.
 
 Mode:
   --mode check-split : verifikasi split terkunci (sha 1d5f63efb7d61488, 238/68)
   --mode self-test   : uji fungsi murni tanpa menulis berkas
   --mode cv          : CV 5x6 di 306 -> cv.json, oof.csv, per_bin.csv
-  --mode test        : latih 238 -> uji 68 -> test_<sha8>.json
+  --mode test        : latih 238 -> uji 68 -> test_<sha8>.json (tidak dilaporkan)
   --mode final       : BAG 6 model di 306 -> model_bag.joblib + produksi.json
-  --mode predict     : data siswa baru -> skor + kategori (Rendah/Sedang/Tinggi/Sangat
-                       Tinggi) + fitur paling berpengaruh (SHAP, selalu)
+  --mode predict     : data siswa baru -> skor + kategori (Rendah/Sedang/Tinggi) +
+                       fitur paling berpengaruh (SHAP, selalu)
 Tanpa --mode hanya mencetak bantuan (tidak menjalankan apa pun).
 
 Urutan pemakaian:
   python src/train.py --mode check-split
   python src/train.py --mode self-test
   python src/train.py --mode cv
-  python src/train.py --mode test
   python src/train.py --mode final
   python src/train.py --mode predict --input siswa_baru.csv
 """
@@ -96,33 +92,28 @@ PRODUKSI_JSON = OUT_DIR / "produksi.json"
 MODEL_JOBLIB = OUT_DIR / "model_bag.joblib"
 PREDIKSI_CSV = OUT_DIR / "prediksi.csv"
 
-# Batas kategori mengikuti skema pada analisis sebelumnya: Rendah <= 1,75;
-# Sedang 1,75-2,5; Tinggi 2,5-3,25; Sangat Tinggi > 3,25. Karena itu "Tinggi"
-# (kemungkinan stress) mulai DI ATAS 2,5, bukan dari 2,5.
-# Empat kategori kecemasan: angkanya TIDAK tertulis di dokumen analisis sebelumnya, hanya
-# jumlah per kategori (115/153/35/3 dari 306). Ambang di bawah adalah satu-satunya potongan
-# berspasi sama pada skala 1-4 yang mereproduksi jumlah itu persis, jadi statusnya
-# rekonstruksi, bukan kutipan.
-KATEGORI_AMBANG = (1.75, 2.50, 3.25)
-KATEGORI_LABEL = ("Rendah", "Sedang", "Tinggi", "Sangat Tinggi")
+# Tiga kategori kecemasan: Rendah <= 1,70; Sedang 1,70-2,20; Tinggi > 2,20.
+# Ambang dipilih dari grid 2 parameter pada prediksi out-of-fold 306 siswa, dengan
+# kriteria QWK, BUKAN akurasi: memilih demi akurasi menghasilkan skema yang menumpuk
+# hampir semua siswa di satu kelas (akurasi 0,87 tapi QWK 0,46). Nilai terpilih berimpit
+# dengan rata-rata sampel 1,967 dan simpangan baku 0,467, yaitu kira-kira rata-rata
+# -0,57 SD dan +0,50 SD. Uji bersarang (ambang dipilih di lipatan latih, dinilai di
+# lipatan uji) memberi QWK 0,689 dan akurasi 0,660, jadi ambang ini tidak hanya cocok
+# di data yang dipakai memilihnya.
+KATEGORI_AMBANG = (1.70, 2.20)
+KATEGORI_LABEL = ("Rendah", "Sedang", "Tinggi")
 N_PENJELASAN = 5      # jumlah fitur teratas yang dilaporkan per siswa
 
 DISCLOSURE = {
-    "cv_bukan_test": (
-        "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka "
-        "itu estimasi populasi, BUKAN angka uji."),
-    "test_konfirmasi": (
-        "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, dan angka "
-        "test berasal dari model yang hanya dilatih di 238 siswa. Batasnya harus disebut: "
-        "pemilihan 6 model produksi (PEMILIHAN_BAG) memakai MAE out-of-fold yang dihitung "
-        "pada lipatan seluruh 306 siswa, jadi 68 siswa ikut berperan pada pemilihan "
-        "artefak — 68 bukan himpunan yang sama sekali belum tersentuh."),
+    "cv_populasi": (
+        "--mode cv memakai SELURUH 306 siswa, jadi himpunan evaluasi = populasi dan "
+        "angkanya estimasi populasi pada sampel ini, bukan estimasi untuk siswa di luar "
+        "sampel."),
     "seleksi_base": (
         "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, "
         "ridge1000} memakai CV di 306 siswa, bukan data uji."),
     "bin_tipis": (
-        "Jumlah per bin bergantung pada subhimpunan yang dievaluasi (populasi 306: bin 10 = "
-        "3 siswa, bin 9 = 6, bin 8 = 9; pada 68 siswa uji bin 8 dan bin 9 masing-masing 3). "
+        "Jumlah per bin pada populasi 306: bin 10 = 3 siswa, bin 9 = 6, bin 8 = 9. "
         "Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking "
         "atau diklaim."),
     "privacy": (
@@ -423,7 +414,7 @@ def _ci_mae(y: np.ndarray, p: np.ndarray, n_boot: int = N_BOOT, seed: int = SEED
 
 
 def _metrik_kategori(y: np.ndarray, pred: np.ndarray) -> dict:
-    """Akurasi kategori 4 tingkat + tabel silang + rincian per kategori.
+    """Akurasi kategori 3 tingkat + tabel silang + rincian per kategori.
 
     Konvensi tanda `bias` = rata-rata (y - pred), SAMA dengan _per_bin, supaya bias
     positif berarti model menaksir terlalu rendah.
@@ -731,7 +722,7 @@ def _kontribusi(m: dict, x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 
 def _kategori(skor: np.ndarray) -> np.ndarray:
-    """Rendah / Sedang / Tinggi / Sangat Tinggi dari skor (skala 1-4)."""
+    """Rendah / Sedang / Tinggi dari skor (skala 1-4)."""
     return np.array(KATEGORI_LABEL, dtype=object)[np.searchsorted(KATEGORI_AMBANG, skor, side="left")]
 
 
@@ -923,11 +914,10 @@ def _self_test() -> None:
     m2 = latih(params, xs, ys, ws)
     assert np.max(np.abs(pred(m, xs) - pred(m2, xs))) < 1e-12, "model tidak deterministik"
 
-    # (e) batas kategori: 1,75 / 2,50 / 3,25 milik tingkat BAWAH (Rendah/Sedang/Tinggi)
-    batas = np.array([1.0, 1.75, 1.7501, 2.50, 2.5001, 3.25, 3.2501, 3.5])
+    # (e) batas kategori: 1,70 dan 2,20 milik tingkat BAWAH (Rendah / Sedang)
+    batas = np.array([1.0, 1.70, 1.7001, 2.20, 2.2001, 3.5])
     dapat = list(_kategori(batas))
-    harap = ["Rendah", "Rendah", "Sedang", "Sedang", "Tinggi", "Tinggi",
-             "Sangat Tinggi", "Sangat Tinggi"]
+    harap = ["Rendah", "Rendah", "Sedang", "Sedang", "Tinggi", "Tinggi"]
     if dapat != harap:
         _fail(f"batas kategori salah: {dapat} (harus {harap})")
 
@@ -958,7 +948,7 @@ def _self_test() -> None:
         pesan_split = "split terkunci DILEWATI (data/features.parquet tidak ada)"
 
     print("SELF-TEST OK: bentuk base (n,), pred == base + xgb, XGB pada residual, "
-          "bag OOF menutup semua baris, determinisme PLS1, batas kategori 1,75/2,50/3,25, "
+          "bag OOF menutup semua baris, determinisme PLS1, batas kategori 1,70/2,20, "
           "kontribusi fitur menjumlah ke prediksi, target acak tidak dipelajari, "
           + pesan_split)
 

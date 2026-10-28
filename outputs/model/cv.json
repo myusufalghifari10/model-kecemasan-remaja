@@ -1,6 +1,6 @@
 {
   "versi": "cv_v1",
-  "dibuat": "2026-10-28T23:33:22",
+  "dibuat": "2026-10-29T01:00:22",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -29,67 +29,50 @@
   ],
   "r2": 0.630483826303162,
   "kategori": {
-    "akurasi": 0.6830065359477124,
-    "qwk": 0.6466680951360617,
-    "meleset_2_tingkat_atau_lebih": 0,
+    "akurasi": 0.6928104575163399,
+    "qwk": 0.7342465753424657,
+    "meleset_2_tingkat_atau_lebih": 1,
     "tabel_silang": {
       "Rendah": {
-        "Rendah": 80,
-        "Sedang": 35,
-        "Tinggi": 0,
-        "Sangat Tinggi": 0
+        "Rendah": 70,
+        "Sedang": 33,
+        "Tinggi": 0
       },
       "Sedang": {
-        "Rendah": 22,
-        "Sedang": 112,
-        "Tinggi": 19,
-        "Sangat Tinggi": 0
+        "Rendah": 16,
+        "Sedang": 77,
+        "Tinggi": 22
       },
       "Tinggi": {
-        "Rendah": 0,
-        "Sedang": 19,
-        "Tinggi": 16,
-        "Sangat Tinggi": 0
-      },
-      "Sangat Tinggi": {
-        "Rendah": 0,
-        "Sedang": 0,
-        "Tinggi": 2,
-        "Sangat Tinggi": 1
+        "Rendah": 1,
+        "Sedang": 22,
+        "Tinggi": 65
       }
     },
     "per_kategori": [
       {
         "kategori": "Rendah",
-        "n": 115,
-        "tepat": 80,
-        "recall": 0.6956521739130435,
-        "bias": -0.12987563720790998,
-        "mae": 0.186312212802904
+        "n": 103,
+        "tepat": 70,
+        "recall": 0.6796116504854369,
+        "bias": -0.13443133591323933,
+        "mae": 0.1827791543876069
       },
       {
         "kategori": "Sedang",
-        "n": 153,
-        "tepat": 112,
-        "recall": 0.7320261437908496,
-        "bias": -0.006510391949466585,
-        "mae": 0.20605588867704636
+        "n": 115,
+        "tepat": 77,
+        "recall": 0.6695652173913044,
+        "bias": -0.04003528290568678,
+        "mae": 0.20362556463845374
       },
       {
         "kategori": "Tinggi",
-        "n": 35,
-        "tepat": 16,
-        "recall": 0.45714285714285713,
-        "bias": 0.322620500627368,
-        "mae": 0.34297407087046006
-      },
-      {
-        "kategori": "Sangat Tinggi",
-        "n": 3,
-        "tepat": 1,
-        "recall": 0.3333333333333333,
-        "bias": 0.43293238872619516,
-        "mae": 0.43293238872619516
+        "n": 88,
+        "tepat": 65,
+        "recall": 0.7386363636363636,
+        "bias": 0.17169558607018245,
+        "mae": 0.27286536649114823
       }
     ]
   },
@@ -186,12 +169,11 @@
     }
   ],
   "catatan_metrik": "Himpunan eval = populasi 306, jadi MAE mentah di sini sudah sama dengan MAE berbobot populasi. Angka ini BUKAN angka test (68 siswa ikut di dalam CV).",
-  "elapsed_detik": 3.9,
+  "elapsed_detik": 3.7,
   "disclosure": {
-    "cv_bukan_test": "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka itu estimasi populasi, BUKAN angka uji.",
-    "test_konfirmasi": "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, dan angka test berasal dari model yang hanya dilatih di 238 siswa. Batasnya harus disebut: pemilihan 6 model produksi (PEMILIHAN_BAG) memakai MAE out-of-fold yang dihitung pada lipatan seluruh 306 siswa, jadi 68 siswa ikut berperan pada pemilihan artefak \u2014 68 bukan himpunan yang sama sekali belum tersentuh.",
+    "cv_populasi": "--mode cv memakai SELURUH 306 siswa, jadi himpunan evaluasi = populasi dan angkanya estimasi populasi pada sampel ini, bukan estimasi untuk siswa di luar sampel.",
     "seleksi_base": "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, ridge1000} memakai CV di 306 siswa, bukan data uji.",
-    "bin_tipis": "Jumlah per bin bergantung pada subhimpunan yang dievaluasi (populasi 306: bin 10 = 3 siswa, bin 9 = 6, bin 8 = 9; pada 68 siswa uji bin 8 dan bin 9 masing-masing 3). Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
+    "bin_tipis": "Jumlah per bin pada populasi 306: bin 10 = 3 siswa, bin 9 = 6, bin 8 = 9. Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
     "privacy": "oof.csv memuat y per siswa dan prediksi.csv memuat skor per siswa; keduanya lokal dan tidak boleh di-commit. Pola .gitignore: outputs/model/oof.csv dan outputs/model/prediksi*.csv"
   }
 }

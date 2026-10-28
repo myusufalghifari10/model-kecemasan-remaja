@@ -1,6 +1,6 @@
 {
   "versi": "produksi_v1",
-  "dibuat": "2026-10-28T23:33:31",
+  "dibuat": "2026-10-29T01:00:30",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -42,15 +42,13 @@
   "n_baris": 306,
   "n_fitur": 88,
   "kategori_ambang": [
-    1.75,
-    2.5,
-    3.25
+    1.7,
+    2.2
   ],
   "kategori_label": [
     "Rendah",
     "Sedang",
-    "Tinggi",
-    "Sangat Tinggi"
+    "Tinggi"
   ],
   "mae_cv_bag": 0.2165207355770155,
   "mae_cv_ci95": [
@@ -76,10 +74,9 @@
     "xgboost": "3.4.1"
   },
   "disclosure": {
-    "cv_bukan_test": "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka itu estimasi populasi, BUKAN angka uji.",
-    "test_konfirmasi": "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, dan angka test berasal dari model yang hanya dilatih di 238 siswa. Batasnya harus disebut: pemilihan 6 model produksi (PEMILIHAN_BAG) memakai MAE out-of-fold yang dihitung pada lipatan seluruh 306 siswa, jadi 68 siswa ikut berperan pada pemilihan artefak \u2014 68 bukan himpunan yang sama sekali belum tersentuh.",
+    "cv_populasi": "--mode cv memakai SELURUH 306 siswa, jadi himpunan evaluasi = populasi dan angkanya estimasi populasi pada sampel ini, bukan estimasi untuk siswa di luar sampel.",
     "seleksi_base": "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, ridge1000} memakai CV di 306 siswa, bukan data uji.",
-    "bin_tipis": "Jumlah per bin bergantung pada subhimpunan yang dievaluasi (populasi 306: bin 10 = 3 siswa, bin 9 = 6, bin 8 = 9; pada 68 siswa uji bin 8 dan bin 9 masing-masing 3). Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
+    "bin_tipis": "Jumlah per bin pada populasi 306: bin 10 = 3 siswa, bin 9 = 6, bin 8 = 9. Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
     "privacy": "oof.csv memuat y per siswa dan prediksi.csv memuat skor per siswa; keduanya lokal dan tidak boleh di-commit. Pola .gitignore: outputs/model/oof.csv dan outputs/model/prediksi*.csv"
   }
 }

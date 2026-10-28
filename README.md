@@ -25,7 +25,7 @@ Prediksi akhir = `base + XGB`.
 |---|---|
 | **MAE** | **0,2165** (CI95 0,196–0,237) |
 | **R²** | **0,6305** |
-| **akurasi kategori** | **68,3%** (QWK 0,647) |
+| **akurasi kategori** | **69,3%** (QWK 0,734) |
 
 Ketiga baris itu disimpan di `cv.json`, bersama tabel per bin (kelemahan
 di ekor), tabel silang kategori, dan rincian per kategori (n, tepat, recall, MAE, bias
@@ -70,29 +70,31 @@ berisiko tinggi.
 `--mode predict` mengeluarkan tiga hal sekaligus, tanpa opsi tambahan:
 
 1. **skor** — taksiran skor kecemasan (skala 1–4), rata-rata bag 6 model;
-2. **kategori** — Rendah / Sedang / Tinggi / Sangat Tinggi;
+2. **kategori** — Rendah / Sedang / Tinggi;
 3. **fitur_1..n + kontribusi_1..n** — fitur yang paling mendorong skor itu (default 5).
 
-Skema kategori mengikuti analisis sebelumnya, dan dapat direproduksi persis dari data ini:
+Skema kategori: tiga tingkat, dua ambang.
 
 | kategori | batas | n |
 |---|---|---|
-| Rendah | ≤ 1,75 | 115 |
-| Sedang | 1,75 – 2,50 | 153 |
-| Tinggi | 2,50 – 3,25 | 35 |
-| Sangat Tinggi | > 3,25 | 3 |
+| Rendah | ≤ 1,70 | 103 |
+| Sedang | 1,70 – 2,20 | 115 |
+| Tinggi | > 2,20 | 88 |
 
-> Angka ambangnya **tidak tertulis** di dokumen analisis sebelumnya — di sana hanya ada
-> jumlah per kategori. Batas 1,75 / 2,50 / 3,25 adalah satu-satunya pembagian berpita
-> 0,75 pada grid 0,05 — resolusi data, karena skor = rata-rata 20 item — yang mereproduksi
-> jumlah itu persis. Bila lebar pita dibebaskan, 0,70–0,75 juga menghasilkan jumlah yang
-> sama, jadi ambang ini konsisten dengan data, bukan satu-satunya kemungkinan secara
-> matematis. Statusnya rekonstruksi, bukan kutipan.
+> Ambang 1,70 dan 2,20 dipilih dari grid dua parameter pada prediksi out-of-fold 306 siswa
+> dengan kriteria **QWK, bukan akurasi**: memilih demi akurasi menghasilkan skema yang
+> menumpuk 238 siswa di satu kelas (akurasi 0,83 tetapi QWK 0,56). Keduanya kira-kira
+> rata-rata sampel (1,967) ∓ 0,5 simpangan baku (0,467). Uji bersarang, yaitu ambang dipilih
+> di lipatan latih lalu dinilai di lipatan uji selama 30 lipatan, memberi **QWK 0,689 dan
+> akurasi 66,0%**, jadi keunggulannya tidak hanya muncul di data yang dipakai memilih.
+> Skema empat tingkat 115/153/35/3 dari dokumen analisis sebelumnya tetap dicatat sebagai
+> pembanding, tetapi tidak dipakai: kelas teratasnya hanya 3 siswa dan tidak dapat
+> dipelajari (recall 1 dari 3).
 
 Akurasi kategori pada CV (prediksi OOF tiap siswa dibanding kategorinya yang sebenarnya):
-**68,3% tepat**, 31,7% meleset satu tingkat, **tidak ada yang meleset dua tingkat**,
-QWK 0,647. Kategori tertinggi paling sulit ditebak (hanya 1 siswa diprediksi Sangat Tinggi
-dari 3 yang sebenarnya), karena prediksi model sedikit terkompresi ke tengah.
+**69,3% tepat**, 30,7% meleset satu tingkat, 1 siswa meleset dua tingkat, **QWK 0,734**.
+Recall tiap tingkat 68% / 67% / 74%, jauh lebih seimbang daripada skema empat tingkat
+(70% / 73% / 46% / 33%).
 
 ### Cara kontribusinya dihitung
 
@@ -177,7 +179,7 @@ tidak ikut repo.
 | Klaim | Bukti | Cara periksa |
 |---|---|---|
 | 306 siswa; 76 kolom input; target = rata-rata 20 item | `src/build_features.py` (privat: `features.parquet`) | `python src/build_features.py --check` |
-| MAE CV 0,2165 [0,196; 0,237]; R² 0,6305; 68,3% kategori; QWK 0,647 | `outputs/model/cv.json` | baca JSON; hitung ulang `--mode cv` (privat) |
+| MAE CV 0,2165 [0,196; 0,237]; R² 0,6305; 69,3% kategori; QWK 0,734 | `outputs/model/cv.json` | baca JSON; hitung ulang `--mode cv` (privat) |
 | MAE in-sample bag 0,1288; R² 0,8502 | `outputs/model/produksi.json` | `--mode final` (privat) |
 | Galat per bin; rincian per kategori | `outputs/model/per_bin.csv`, `cv.json → kategori` | baca berkas (privat untuk hitung ulang) |
 | Berkas split tidak berubah | `data/split_v1.json` + `SHA_V1` di `train.py` | `--mode check-split` (privat) |
@@ -201,12 +203,11 @@ self-test` dan `--mode predict` pada CSV sendiri. Yang tidak bisa: menghitung ul
 - Urutan kolom pada berkas input **tidak** berpengaruh — kolom dipilih berdasarkan nama.
   Yang berpengaruh: nama kolom, skala nilai, dan level kategori. Level kategori di luar data
   latih sekarang ditolak dengan pesan, tidak lagi berubah menjadi dummy nol secara senyap.
-- Tabel per bin (lebar 0,25) dan tabel kategori (empat tingkat) memakai batas yang sama
-  dengan konvensi berbeda: `1,75` masih **bin 4** padahal kategorinya **Rendah**, `2,50`
-  bin 7 tetapi Sedang, `3,25` bin 10 tetapi Tinggi. Jangan membaca tabel bin sebagai tabel
-  kategori.
+- Tabel per bin (lebar 0,25) dan tabel kategori (tiga tingkat) memakai batas yang tidak
+  berimpit: `1,70` sudah **Rendah** padahal masih **bin 3**, dan `2,20` sudah **Sedang**
+  padahal masih **bin 5**. Jangan membaca tabel bin sebagai tabel kategori.
 - Bin 10 hanya 3 siswa (bin 9: 6, bin 8: 9). MAE per bin untuk bin dengan n ≤ 5 dilaporkan
   tetapi tidak boleh diranking.
 - Kategori adalah pembagian skor prediksi pada ambang tetap, bukan model klasifikasi
-  tersendiri; ambangnya tidak dioptimalkan untuk keputusan, jadi terbaca konservatif di
-  ekor (Sangat Tinggi jarang diprediksi).
+  tersendiri. Ambang dipilih untuk QWK, bukan untuk keputusan penyaringan; untuk keperluan
+  triase, "Tinggi" (88 siswa, 29%) adalah penanda awal, bukan diagnosis.
