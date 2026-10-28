@@ -1,0 +1,80 @@
+# Model Risiko Kecemasan Remaja
+
+Prediksi skor kecemasan siswa SMK dari 88 fitur kuesioner: 58 item mentah (18 item faktor
+tekanan, 18 coping, 10 perilaku sehat, 12 dukungan lingkungan), 13 skor faktor, dan 4
+variabel demografi. Target `y_kontinu` = rata-rata 20 item kecemasan (skala 1–4).
+
+Data: 306 siswa, survei cross-sectional. Lihat `docs/codebook.md`.
+
+## Model
+
+Dua tahap, keduanya dilatih **di dalam lipatan** pada data latih lipatan saja:
+
+1. **Tulang punggung linier** — `StandardScaler` + `PLSRegression(n_components=1)`.
+   Satu komponen PLS adalah arah yang memaksimalkan kovarians dengan y: poros "distres
+   umum" yang stabil pada 88 fitur Likert yang saling berkorelasi. Dengan begitu pohon
+   hanya perlu mempelajari simpangannya, bukan memprediksi y dari nol.
+2. **XGBoost** (`objective = reg:absoluteerror`) pada residual `y − base`, dengan bobot per
+   bin skor kecemasan (bobot populasi, cap 3,0).
+
+Prediksi akhir = `base + XGB`.
+
+## Hasil
+
+| protokol | MAE | keterangan |
+|---|---|---|
+| CV 5×6 di 306 siswa | **0,2165** (CI95 0,196–0,237) | estimasi populasi |
+| XGB murni, lipatan identik | 0,2234 | pembanding |
+| Latih 238 → uji 68 | 0,2407 mentah / 0,2230 berbobot populasi | konfirmasi |
+
+RMSE 0,2835 · R² 0,6305 · selisih berpasangan vs XGB murni −0,0069
+(CI95 −0,0136…−0,0004, menang 6/6 ulangan).
+
+## 30 model untuk mengukur, 6 model untuk produksi
+
+- **Pengukuran** — CV 5 lipat × 6 ulangan = 30 model. Setiap siswa diprediksi oleh 6 model
+  yang tidak pernah melihatnya; 1.836 prediksi dirata-ratakan menjadi 306 prediksi. Dari
+  sinilah angka 0,2165 berasal.
+- **Produksi** — 6 model (satu per ulangan), jawaban dirata-ratakan. Konfigurasi ini persis
+  yang diukur, jadi 0,2165 berlaku untuk artefak yang dikirim.
+
+## Isi repo
+
+```
+src/train.py            model + protokol evaluasi (5 mode)
+src/config.py           nama kolom, path, seed
+outputs/model/cv.json   hasil CV populasi 306 (angka utama)
+outputs/model/per_bin.csv
+outputs/model/cv_per_fold.csv
+outputs/model/test_1d5f63ef.json   konfirmasi pada split 238→68
+outputs/model/produksi.json        spesifikasi artefak produksi
+data/split_v1.json      split terkunci 238/68 (sha 1d5f63efb7d61488)
+docs/codebook.md        definisi variabel dan aturan pembersihan data
+```
+
+Tidak ikut repo (berisi data responden atau berkas besar): `data/raw/`,
+`data/features.parquet`, `outputs/model/oof.csv`, `outputs/model/model_bag.joblib`.
+
+## Menjalankan
+
+```bash
+python -m venv .venv && .venv/bin/pip install -r requirements.txt
+
+python src/train.py --mode check-split   # verifikasi split terkunci
+python src/train.py --mode self-test     # uji fungsi murni
+python src/train.py --mode cv            # CV 5x6 -> outputs/model/cv.json
+python src/train.py --mode test          # 238 -> 68 (konfirmasi)
+python src/train.py --mode final         # bag 6 model -> model_bag.joblib
+```
+
+`--mode cv` dan `--mode final` membutuhkan `data/features.parquet` (306 × 89) yang tidak
+disertakan karena memuat jawaban per siswa.
+
+## Catatan pembacaan
+
+- 0,2165 adalah estimasi **populasi**: himpunan evaluasi CV = seluruh 306 siswa, termasuk
+  68 siswa uji, sehingga angka ini **bukan** angka uji.
+- Angka 0,2407/0,2230 berasal dari split tetap 238→68 dan dilaporkan sekali sebagai
+  konfirmasi, bukan untuk memilih model atau parameter.
+- Bin 10 hanya 3 siswa (bin 9: 6, bin 8: 9). MAE per bin untuk bin dengan n ≤ 5 dilaporkan
+  tetapi tidak boleh diranking.

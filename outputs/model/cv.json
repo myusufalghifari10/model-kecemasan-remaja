@@ -1,0 +1,163 @@
+{
+  "versi": "cv_v1",
+  "dibuat": "2026-10-28T16:55:23",
+  "model": {
+    "nama": "PLS1 + XGB residual",
+    "pls_components": 1,
+    "objective": "reg:absoluteerror",
+    "parameter": {
+      "n_estimators": 1282,
+      "max_depth": 6,
+      "learning_rate": 0.0366866067282647,
+      "min_child_weight": 8.520630926540825,
+      "subsample": 0.6426773101653227,
+      "colsample_bytree": 0.6009128736638583,
+      "gamma": 0.041026056939631,
+      "reg_alpha": 0.000918535444633,
+      "reg_lambda": 0.3362195219220946
+    },
+    "sumber_parameter": "PARAM_MEDIAN (litera di berkas ini)"
+  },
+  "seed": 42,
+  "n_baris": 306,
+  "n_fold": 30,
+  "metode": "RepeatedStratifiedKFold 5x6 di seluruh 306; bag = rata-rata 6 repeat",
+  "mae": 0.2165207355770155,
+  "mae_ci95": [
+    0.19585796812217088,
+    0.23704683964742224
+  ],
+  "rmse": 0.28350078996397415,
+  "r2": 0.630483826303162,
+  "mae_per_fold_median": 0.2193228923987836,
+  "per_bin": [
+    {
+      "bin": 1,
+      "n": 9,
+      "mae": 0.29596007933053325,
+      "bias": -0.29596007933053325,
+      "y_mean": 1.1388888888888888,
+      "pred_mean": 1.4348489682194223,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 2,
+      "n": 33,
+      "mae": 0.18563914275975163,
+      "bias": -0.14960150708726777,
+      "y_mean": 1.3575757575757574,
+      "pred_mean": 1.5071772646630253,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 3,
+      "n": 61,
+      "mae": 0.16453312257175257,
+      "bias": -0.10239241231490188,
+      "y_mean": 1.612295081967213,
+      "pred_mean": 1.7146874942821153,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 4,
+      "n": 74,
+      "mae": 0.20932987688128338,
+      "bias": -0.09229815267113017,
+      "y_mean": 1.8493243243243238,
+      "pred_mean": 1.9416224769954546,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 5,
+      "n": 41,
+      "mae": 0.19332997668798071,
+      "bias": 0.054292823500235454,
+      "y_mean": 2.1109756097560974,
+      "pred_mean": 2.056682786255862,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 6,
+      "n": 45,
+      "mae": 0.22524455093481974,
+      "bias": 0.05465407314740479,
+      "y_mean": 2.352222222222222,
+      "pred_mean": 2.2975681490748174,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 7,
+      "n": 25,
+      "mae": 0.2986986140751959,
+      "bias": 0.25731163824840275,
+      "y_mean": 2.6,
+      "pred_mean": 2.342688361751597,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 8,
+      "n": 9,
+      "mae": 0.29096374503754646,
+      "bias": 0.29096374503754646,
+      "y_mean": 2.861111111111111,
+      "pred_mean": 2.5701473660735648,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 9,
+      "n": 6,
+      "mae": 0.4152018726262934,
+      "bias": 0.3832527424693782,
+      "y_mean": 3.0666666666666664,
+      "pred_mean": 2.683413924197288,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 10,
+      "n": 3,
+      "mae": 0.43293238872619516,
+      "bias": 0.43293238872619516,
+      "y_mean": 3.3833333333333333,
+      "pred_mean": 2.950400944607138,
+      "boleh_diranking": false
+    }
+  ],
+  "baseline_xgb_murni": {
+    "mae": 0.2234419087179346,
+    "mae_per_fold": [
+      0.23193439907497831,
+      0.22188573171889864,
+      0.23387940545487246,
+      0.23242750432756212,
+      0.22317970243154786,
+      0.2280185201588799
+    ],
+    "catatan": "fold identik, encoder identik"
+  },
+  "perbandingan_berpasangan": {
+    "delta_mae": -0.006921173140919101,
+    "ci95_delta": [
+      -0.01364021398750827,
+      -0.0003795672436071105
+    ],
+    "repeat_menang": 6,
+    "n_repeat": 6,
+    "siswa_membaik": 156,
+    "siswa_memburuk": 150,
+    "siswa_seri": 0,
+    "catatan": "delta = |err model| - |err baseline|; negatif = model lebih baik"
+  },
+  "pembanding": {
+    "sumber": "outputs/baseline_oof.csv",
+    "mae": 0.22331975662110934
+  },
+  "catatan_metrik": "Himpunan eval = populasi 306, jadi MAE mentah di sini sudah sama dengan MAE berbobot populasi. Angka ini BUKAN angka test (68 siswa ikut di dalam CV).",
+  "elapsed_detik": 7.5,
+  "disclosure": {
+    "cv_bukan_test": "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka itu estimasi populasi, BUKAN angka uji.",
+    "test_konfirmasi": "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, tidak dipakai memilih model, base, atau parameter apa pun.",
+    "seleksi_base": "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, ridge1000} memakai CV di 306, bukan data uji; dibatasi oleh uji 3 seed fold (42, 7, 2024; 18/18 repeat menang).",
+    "bin_tipis": "Bin 10 hanya 3 siswa (bin 8: 9, bin 9: 6). Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
+    "privacy": "oof.csv memuat y per siswa dan bersifat lokal: jangan di-commit. Pola .gitignore yang dipakai: outputs/model/oof.csv"
+  }
+}

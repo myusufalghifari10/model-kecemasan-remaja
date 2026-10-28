@@ -1,0 +1,136 @@
+{
+  "versi": "test_v1",
+  "dibuat": "2026-10-28T16:55:27",
+  "model": {
+    "nama": "PLS1 + XGB residual",
+    "pls_components": 1,
+    "parameter": {
+      "n_estimators": 1282,
+      "max_depth": 6,
+      "learning_rate": 0.0366866067282647,
+      "min_child_weight": 8.520630926540825,
+      "subsample": 0.6426773101653227,
+      "colsample_bytree": 0.6009128736638583,
+      "gamma": 0.041026056939631,
+      "reg_alpha": 0.000918535444633,
+      "reg_lambda": 0.3362195219220946
+    },
+    "objective": "reg:absoluteerror"
+  },
+  "split": {
+    "sumber": "data/split_v1.json",
+    "sha256_test_row_id": "1d5f63efb7d61488b32e4faf4ba7a2d08d4a9211c14df6c2736faf3a78eab816",
+    "n_train": 238,
+    "n_test": 68
+  },
+  "n_fitur": 88,
+  "mae_raw": 0.2406653383851332,
+  "mae_berbobot": 0.22303426876156812,
+  "mae_ci95_raw": [
+    0.19352523608358926,
+    0.29179738337961925
+  ],
+  "rmse": 0.314185030567487,
+  "r2": 0.6883715087677621,
+  "bias": 0.04567616652281671,
+  "slope_pred_atas_y": 0.6463227272367333,
+  "per_bin": [
+    {
+      "bin": 1,
+      "n": 3,
+      "mae": 0.33893780181309435,
+      "bias": -0.33893780181309435,
+      "y_mean": 1.133333333333333,
+      "pred_mean": 1.4722711351464277,
+      "boleh_diranking": false
+    },
+    {
+      "bin": 2,
+      "n": 7,
+      "mae": 0.16414807425967656,
+      "bias": -0.09763623368735355,
+      "y_mean": 1.3785714285714288,
+      "pred_mean": 1.4762076622587819,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 3,
+      "n": 12,
+      "mae": 0.17849184950945898,
+      "bias": -0.07785583865036545,
+      "y_mean": 1.6041666666666667,
+      "pred_mean": 1.6820225053170323,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 4,
+      "n": 15,
+      "mae": 0.20648158780418188,
+      "bias": -0.16733253947170504,
+      "y_mean": 1.8633333333333335,
+      "pred_mean": 2.030665872805038,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 5,
+      "n": 8,
+      "mae": 0.18017676645029904,
+      "bias": 0.16711251760175952,
+      "y_mean": 2.1187500000000004,
+      "pred_mean": 1.9516374823982403,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 6,
+      "n": 9,
+      "mae": 0.25684279217642103,
+      "bias": 0.20827974971277088,
+      "y_mean": 2.3499999999999996,
+      "pred_mean": 2.141720250287229,
+      "boleh_diranking": true
+    },
+    {
+      "bin": 7,
+      "n": 5,
+      "mae": 0.2918936831853263,
+      "bias": 0.2918936831853263,
+      "y_mean": 2.62,
+      "pred_mean": 2.3281063168146736,
+      "boleh_diranking": false
+    },
+    {
+      "bin": 8,
+      "n": 3,
+      "mae": 0.4580910706408794,
+      "bias": 0.4580910706408794,
+      "y_mean": 2.8833333333333333,
+      "pred_mean": 2.425242262692454,
+      "boleh_diranking": false
+    },
+    {
+      "bin": 9,
+      "n": 3,
+      "mae": 0.29155276134919594,
+      "bias": 0.23549236797840267,
+      "y_mean": 3.016666666666667,
+      "pred_mean": 2.781174298688264,
+      "boleh_diranking": false
+    },
+    {
+      "bin": 10,
+      "n": 3,
+      "mae": 0.49962263355625486,
+      "bias": 0.49962263355625486,
+      "y_mean": 3.3833333333333333,
+      "pred_mean": 2.8837106997770783,
+      "boleh_diranking": false
+    }
+  ],
+  "disclosure": {
+    "cv_bukan_test": "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka itu estimasi populasi, BUKAN angka uji.",
+    "test_konfirmasi": "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, tidak dipakai memilih model, base, atau parameter apa pun.",
+    "seleksi_base": "Jumlah komponen PLS dipilih dari 5 kandidat {PLS1, PLS2, PLS3, ridge300, ridge1000} memakai CV di 306, bukan data uji; dibatasi oleh uji 3 seed fold (42, 7, 2024; 18/18 repeat menang).",
+    "bin_tipis": "Bin 10 hanya 3 siswa (bin 8: 9, bin 9: 6). Tabel per bin dilaporkan dengan flag n<=5 dan bin tersebut tidak boleh diranking atau diklaim.",
+    "privacy": "oof.csv memuat y per siswa dan bersifat lokal: jangan di-commit. Pola .gitignore yang dipakai: outputs/model/oof.csv"
+  }
+}

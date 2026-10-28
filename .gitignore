@@ -1,0 +1,18 @@
+# Data responden — lokal saja (memuat jawaban per siswa)
+data/raw/
+data/features.parquet
+
+# Artefak model dan prediksi per siswa
+outputs/baseline_oof.csv
+outputs/model/oof.csv
+outputs/model/model_bag.joblib
+outputs/model/*.ubj
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
