@@ -31,7 +31,7 @@ Ketiga baris itu saja yang disimpan di `cv.json` dan `test_*.json`, ditambah tab
 untuk menunjukkan kelemahan di ekor; metrik lain dihitung tidak dipersistenkan.
 
 Artefak yang dipakai untuk inference adalah bag 6 model di `model_bag.joblib`. Pada 306
-siswa yang sudah dilihatnya, MAE-nya **0,1336** (R² 0,8387) — angka ini ikut dicatat di
+siswa yang sudah dilihatnya, MAE-nya **0,1288** (R² 0,8502) — angka ini ikut dicatat di
 `produksi.json` hanya sebagai penanda artefak, **bukan** performa. Harapan performa untuk
 siswa baru tetap **0,2165**, karena pada CV setiap prediksi selalu berasal dari 6 model
 yang belum pernah melihat siswa itu.
@@ -49,8 +49,13 @@ berisiko tinggi.
 - **Pengukuran** — CV 5 lipat × 6 ulangan = 30 model. Setiap siswa diprediksi oleh 6 model
   yang tidak pernah melihatnya; 1.836 prediksi dirata-ratakan menjadi 306 prediksi. Dari
   sinilah angka 0,2165 berasal.
-- **Produksi** — 6 model (satu per ulangan), jawaban dirata-ratakan. Konfigurasi ini persis
-  yang diukur, jadi 0,2165 berlaku untuk artefak yang dikirim.
+- **Produksi** — 6 model: **#8, #11, #17, #20, #24, #26**. Dipilih dengan kriteria
+  out-of-fold: tiap model dinilai hanya pada 61 siswa yang tidak dilihatnya, lalu MAE itu
+  dibagi rata-rata MAE ulangannya untuk meredam tingkat kesulitan lipatan. Kriteria ini
+  tidak memakai skor pada 306 siswa yang menjadi data latih model, jadi bukan pemilihan
+  berdasarkan hafalan. Keuntungan pemilihan semacam ini terukur **±0,003 MAE** pada uji
+  bersarang (memilih di separuh siswa buta, dinilai di separuh lain: 0,2454 vs 0,2485 untuk
+  bag kanonik, menang 383/500) — kecil, dan estimasi performa untuk siswa baru tetap 0,2165.
 
 ## Prediksi, kategori, dan alasan (satu keluaran)
 

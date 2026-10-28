@@ -1,6 +1,6 @@
 {
   "versi": "produksi_v1",
-  "dibuat": "2026-10-28T18:37:07",
+  "dibuat": "2026-10-28T19:19:07",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -19,6 +19,26 @@
     "n_bag": 6
   },
   "artefak": "model_bag.joblib",
+  "pemilihan_model": {
+    "indeks_0based": [
+      7,
+      10,
+      16,
+      19,
+      23,
+      25
+    ],
+    "nomor_1based": [
+      8,
+      11,
+      17,
+      20,
+      24,
+      26
+    ],
+    "kriteria": "MAE out-of-fold tiap model (61 siswa yang tidak dilihatnya) dibagi rata-rata MAE ulangannya untuk koreksi kesulitan lipatan",
+    "catatan": "kriteria tidak memakai skor pada 306 siswa; keuntungan pemilihan semacam ini terukur ~0,003 MAE pada uji bersarang"
+  },
   "n_baris": 306,
   "n_fitur": 88,
   "kategori_ambang": [
@@ -37,15 +57,15 @@
     0.19585796812217088,
     0.23704683964742224
   ],
-  "mae_in_sample_bag": 0.13363320279212806,
-  "r2_in_sample_bag": 0.8386804833503083,
+  "mae_in_sample_bag": 0.12877312794362614,
+  "r2_in_sample_bag": 0.8502339779819784,
   "prediksi": {
     "in_sample": true,
     "catatan": "Artefak INI dipakai untuk inference, dan angka in-sample-nya (mae_in_sample_bag) hanya menggambarkan data yang sudah dilihatnya, bukan performa pada siswa baru. Harapan performa untuk siswa baru tetap mae_cv_bag = 0,2165, karena pada CV tiap prediksi selalu berasal dari 6 model yang tidak melihat siswa itu.",
-    "mean": 1.9793143018872035,
-    "sd": 0.4241233686160338,
-    "min": 1.0924304621990872,
-    "max": 3.3322397919488176
+    "mean": 1.9799941402459347,
+    "sd": 0.4223916544314752,
+    "min": 1.057750441020369,
+    "max": 3.3208147873405065
   },
   "round_trip_selisih_maks": 0.0,
   "versi_paket": {

@@ -67,6 +67,15 @@ N_SPLITS, N_REPEATS = 5, 6
 N_FOLD = N_SPLITS * N_REPEATS
 N_BOOT = 2000
 N_POP = 306
+# Enam model untuk inference, dipilih dengan kriteria OUT-OF-FOLD: setiap model hanya
+# dinilai pada 61 siswa yang tidak dilihatnya, lalu MAE itu dibagi rata-rata MAE ulangannya
+# (koreksi tingkat kesulitan lipatan). Kriteria ini tidak memakai skor pada 306 siswa yang
+# menjadi data latih model, jadi bukan pemilihan berdasarkan hafalan.
+#   6 teratas: #8, #11, #17, #20, #24, #26  -> indeks 0-based di bawah
+# Uji bersarang atas aturan pemilihan ini (pilih di separuh siswa buta, nilai di separuh
+# lain, 500 ulangan): MAE 0,2454 vs 0,2485 untuk bag kanonik = -0,0031, menang 383/500.
+# Keuntungannya kecil; estimasi performa untuk siswa baru tetap memakai MAE CV 0,2165.
+PEMILIHAN_BAG = (7, 10, 16, 19, 23, 25)
 N_BAG = N_REPEATS
 PLS_COMPONENTS = 1
 # n_jobs DIPAKSA 1. Mesin ini sering memuat llama-server + beberapa proses pi; dengan
@@ -590,9 +599,10 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
     # berbeda, lalu prediksi dirata-rata. Konstruksi ini sama dengan bag di --mode cv.
     folds = _daftar_fold(df, SEED)
     models = []
-    for r in range(N_BAG):
-        tr = folds[r * N_SPLITS + 0][0]
+    for i in PEMILIHAN_BAG:
+        tr = folds[i][0]
         models.append(latih(params, x[tr], y[tr], bobot(y[tr])))
+    assert len(models) == N_BAG, f"bag harus {N_BAG} model, ada {len(models)}"
     pred_bag = np.mean(np.vstack([pred(m, x) for m in models]), axis=0)
     if not np.isfinite(pred_bag).all():
         _fail("prediksi bag mengandung NaN/inf")
@@ -616,6 +626,14 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
         "model": {"nama": "PLS1 + XGB residual", "pls_components": int(PLS_COMPONENTS),
                   "parameter": params, "objective": OBJECTIVE, "n_bag": int(N_BAG)},
         "artefak": MODEL_JOBLIB.name,
+        "pemilihan_model": {
+            "indeks_0based": list(PEMILIHAN_BAG),
+            "nomor_1based": [i + 1 for i in PEMILIHAN_BAG],
+            "kriteria": ("MAE out-of-fold tiap model (61 siswa yang tidak dilihatnya) "
+                         "dibagi rata-rata MAE ulangannya untuk koreksi kesulitan lipatan"),
+            "catatan": ("kriteria tidak memakai skor pada 306 siswa; keuntungan pemilihan "
+                        "semacam ini terukur ~0,003 MAE pada uji bersarang"),
+        },
         "n_baris": int(len(df)),
         "n_fitur": int(x.shape[1]),
         "kategori_ambang": list(KATEGORI_AMBANG),
