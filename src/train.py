@@ -815,12 +815,16 @@ def _self_test() -> None:
     m2 = latih(params, xs, ys, ws)
     assert np.max(np.abs(pred(m, xs) - pred(m2, xs))) < 1e-12, "model tidak deterministik"
 
-    # (e) split terkunci
-    df = muat_data()
-    run_check_split(df)
+    # (e) split terkunci — butuh data mentah, jadi dilewati kalau matriks fitur tidak ada
+    #     (mis. pada hasil clone: data per siswa sengaja tidak ikut repo).
+    if C.DATA_FEATURES.exists():
+        run_check_split(muat_data())
+        pesan_split = f"split sha {SHA_V1}"
+    else:
+        pesan_split = "split terkunci DILEWATI (data/features.parquet tidak ada)"
 
     print("SELF-TEST OK: bentuk base (n,), pred == base + xgb, XGB pada residual, "
-          "bag OOF menutup semua baris, determinisme PLS1, split sha " + SHA_V1)
+          "bag OOF menutup semua baris, determinisme PLS1, " + pesan_split)
 
 
 # ---------------------------------------------------------------- main

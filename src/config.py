@@ -8,7 +8,7 @@ from pathlib import Path
 # ---------- Path ----------
 ROOT = Path(__file__).resolve().parent.parent
 DATA_RAW = ROOT / "data" / "raw" / "INPUT DATA  (1).sav"
-DATA_FEATURES = ROOT / "data" / "features.parquet"      # 306 x 89 (88 fitur + target)
+DATA_FEATURES = ROOT / "data" / "features.parquet"      # 306 x 82 (76 kolom input -> 88 setelah one-hot, + 6 kolom lain)
 DATA_SPLIT = ROOT / "data" / "split_v1.json"            # 238 latih / 68 uji (terkunci)
 CODEBOOK = ROOT / "docs" / "codebook.md"
 
