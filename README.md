@@ -131,5 +131,6 @@ siswa.
   konfirmasi, bukan untuk memilih model atau parameter.
 - Bin 10 hanya 3 siswa (bin 9: 6, bin 8: 9). MAE per bin untuk bin dengan n ≤ 5 dilaporkan
   tetapi tidak boleh diranking.
-- Label "Kemungkinan stress" adalah binerisasi skor prediksi pada ambang 2,5, bukan model
-  klasifikasi tersendiri; performanya tidak dioptimalkan untuk keputusan itu.
+- Kategori adalah pembagian skor prediksi pada ambang tetap, bukan model klasifikasi
+  tersendiri; ambangnya tidak dioptimalkan untuk keputusan, jadi terbaca konservatif di
+  ekor (Sangat Tinggi jarang diprediksi).
