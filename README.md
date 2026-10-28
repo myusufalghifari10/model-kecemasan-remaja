@@ -91,16 +91,21 @@ Keluaran `outputs/model/prediksi.csv`:
 ```
 src/train.py            model + protokol evaluasi + inferensi (6 mode)
 src/config.py           nama kolom, path, seed
-outputs/model/cv.json   hasil CV populasi 306 (MAE, R², per bin)
+outputs/model/model_bag.joblib     artefak siap pakai: bag 6 model (6 MB)
+outputs/model/cv.json   hasil CV populasi 306: MAE+CI95, RMSE, R², metrik kategori
+                        (akurasi, QWK, tabel silang, rincian per kategori), metrik
+                        skrining (AUC, sensitivitas, spesifisitas, PPV), per bin
 outputs/model/per_bin.csv
-outputs/model/test_1d5f63ef.json   konfirmasi pada split 238→68
-outputs/model/produksi.json        spesifikasi artefak produksi
+outputs/model/test_1d5f63ef.json   konfirmasi pada split 238→68 (metrik yang sama)
+outputs/model/produksi.json        spesifikasi artefak produksi + ambang kategori
 data/split_v1.json      split terkunci 238/68 (sha 1d5f63efb7d61488)
 docs/codebook.md        definisi variabel dan aturan pembersihan data
 ```
 
-Tidak ikut repo (berisi data responden atau berkas besar): `data/raw/`,
-`data/features.parquet`, `outputs/model/oof.csv`, `outputs/model/model_bag.joblib`.
+Tidak ikut repo — berisi jawaban per siswa atau data mentah: `data/raw/`,
+`data/features.parquet`, `outputs/model/oof.csv`. Karena `data/features.parquet` tidak
+ikut, `--mode cv` dan `--mode final` hanya bisa dijalankan oleh yang punya data mentah;
+`--mode predict` tetap jalan dari hasil clone karena artefak model sudah ikut repo.
 
 ## Menjalankan
 

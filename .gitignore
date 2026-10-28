@@ -4,7 +4,6 @@ data/features.parquet
 
 # Artefak model dan prediksi per siswa
 outputs/model/oof.csv
-outputs/model/model_bag.joblib
 outputs/model/*.ubj
 
 # Python

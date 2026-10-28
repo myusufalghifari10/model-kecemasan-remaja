@@ -1,6 +1,6 @@
 {
   "versi": "test_v1",
-  "dibuat": "2026-10-28T17:07:54",
+  "dibuat": "2026-10-28T18:26:29",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -30,7 +30,83 @@
     0.19352523608358926,
     0.29179738337961925
   ],
+  "rmse": 0.314185030567487,
   "r2": 0.6883715087677621,
+  "metrik_kategori": {
+    "akurasi": 0.7058823529411765,
+    "qwk": 0.7300516077808654,
+    "meleset_1_tingkat": 20,
+    "meleset_2_tingkat_atau_lebih": 0,
+    "tabel_silang": {
+      "Rendah": {
+        "Rendah": 17,
+        "Sedang": 5,
+        "Tinggi": 0,
+        "Sangat Tinggi": 0
+      },
+      "Sedang": {
+        "Rendah": 5,
+        "Sedang": 26,
+        "Tinggi": 1,
+        "Sangat Tinggi": 0
+      },
+      "Tinggi": {
+        "Rendah": 0,
+        "Sedang": 6,
+        "Tinggi": 5,
+        "Sangat Tinggi": 0
+      },
+      "Sangat Tinggi": {
+        "Rendah": 0,
+        "Sedang": 0,
+        "Tinggi": 3,
+        "Sangat Tinggi": 0
+      }
+    },
+    "per_kategori": [
+      {
+        "kategori": "Rendah",
+        "n": 22,
+        "tepat": 17,
+        "recall": 0.7727272727272727,
+        "bias": 0.1197516865934156,
+        "mae": 0.19580691451684212
+      },
+      {
+        "kategori": "Sedang",
+        "n": 32,
+        "tepat": 26,
+        "recall": 0.8125,
+        "bias": -0.02191968112979495,
+        "mae": 0.21406947119540343
+      },
+      {
+        "kategori": "Tinggi",
+        "n": 11,
+        "tepat": 5,
+        "recall": 0.45454545454545453,
+        "bias": -0.3218380665258616,
+        "mae": 0.33712726471789617
+      },
+      {
+        "kategori": "Sangat Tinggi",
+        "n": 3,
+        "tepat": 0,
+        "recall": 0.0,
+        "bias": -0.49962263355625486,
+        "mae": 0.49962263355625486
+      }
+    ]
+  },
+  "metrik_skrining": {
+    "ambang": 2.5,
+    "positif_aktual": 14,
+    "ditandai": 9,
+    "auc": 0.9351851851851852,
+    "sensitivitas": 0.5714285714285714,
+    "spesifisitas": 0.9814814814814815,
+    "ppv": 0.8888888888888888
+  },
   "per_bin": [
     {
       "bin": 1,

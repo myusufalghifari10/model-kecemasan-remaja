@@ -55,6 +55,7 @@ import pandas as pd
 import sklearn
 import xgboost
 from sklearn.cross_decomposition import PLSRegression
+from sklearn.metrics import cohen_kappa_score, roc_auc_score
 from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
@@ -381,6 +382,58 @@ def _ci_mae(y: np.ndarray, p: np.ndarray, n_boot: int = N_BOOT, seed: int = SEED
     return [float(np.percentile(sim, 2.5)), float(np.percentile(sim, 97.5))]
 
 
+def _metrik_kategori(y: np.ndarray, pred: np.ndarray) -> dict:
+    """Akurasi kategori 4 tingkat + tabel silang + rincian per kategori."""
+    ka = _kategori(y)
+    ks = _kategori(pred)
+    pos = {k: i for i, k in enumerate(KATEGORI_LABEL)}
+    ia = np.array([pos[v] for v in ka])
+    ib = np.array([pos[v] for v in ks])
+    selisih = np.abs(ia - ib)
+    silang = {k: {k2: int(((ka == k) & (ks == k2)).sum()) for k2 in KATEGORI_LABEL}
+              for k in KATEGORI_LABEL}
+    rinci = []
+    for k in KATEGORI_LABEL:
+        m = ka == k
+        n = int(m.sum())
+        if n == 0:
+            continue
+        rinci.append({
+            "kategori": k, "n": n,
+            "tepat": int((ks[m] == k).sum()),
+            "recall": float((ks[m] == k).mean()),
+            "bias": float((pred[m] - y[m]).mean()),
+            "mae": float(np.abs(pred[m] - y[m]).mean()),
+        })
+    return {
+        "akurasi": float((ia == ib).mean()),
+        "qwk": float(cohen_kappa_score(ia, ib, weights="quadratic")),
+        "meleset_1_tingkat": int((selisih == 1).sum()),
+        "meleset_2_tingkat_atau_lebih": int((selisih >= 2).sum()),
+        "tabel_silang": silang,
+        "per_kategori": rinci,
+    }
+
+
+def _metrik_skrining(y: np.ndarray, pred: np.ndarray) -> dict:
+    """Pandangan biner: 'Tinggi atau lebih' (skor > 2,50) versus sisanya."""
+    t = KATEGORI_AMBANG[1]
+    ya = (y > t).astype(int)
+    pa = (pred > t).astype(int)
+    tp = int(((pa == 1) & (ya == 1)).sum())
+    fn = int(((pa == 0) & (ya == 1)).sum())
+    fp = int(((pa == 1) & (ya == 0)).sum())
+    return {
+        "ambang": float(t),
+        "positif_aktual": int(ya.sum()),
+        "ditandai": int(pa.sum()),
+        "auc": float(roc_auc_score(ya, pred)),
+        "sensitivitas": float(tp / (tp + fn)) if tp + fn else None,
+        "spesifisitas": float(1 - fp / int((ya == 0).sum())),
+        "ppv": float(tp / (tp + fp)) if tp + fp else None,
+    }
+
+
 def _per_bin(y: np.ndarray, p: np.ndarray, b: np.ndarray) -> list[dict]:
     out = []
     for k in range(1, 11):
@@ -457,7 +510,10 @@ def run_cv(df: pd.DataFrame, seed: int) -> None:
         "metode": "RepeatedStratifiedKFold 5x6 di seluruh 306; bag = rata-rata 6 repeat",
         "mae": mae_model,
         "mae_ci95": _ci_mae(y, pooled),
+        "rmse": float(np.sqrt(np.mean((y - pooled) ** 2))),
         "r2": r2,
+        "metrik_kategori": _metrik_kategori(y, pooled),
+        "metrik_skrining": _metrik_skrining(y, pooled),
         "per_bin": tabel_bin,
         "catatan_metrik": (
             "Himpunan eval = populasi 306, jadi MAE mentah di sini sudah sama dengan MAE "
@@ -522,7 +578,10 @@ def run_test(df: pd.DataFrame, force: bool = False) -> None:
         "mae_raw": mae_raw,
         "mae_berbobot": mae_w,
         "mae_ci95_raw": _ci_mae(yte, p),
+        "rmse": float(np.sqrt(np.mean((yte - p) ** 2))),
         "r2": float(1 - np.sum((yte - p) ** 2) / np.sum((yte - yte.mean()) ** 2)),
+        "metrik_kategori": _metrik_kategori(yte, p),
+        "metrik_skrining": _metrik_skrining(yte, p),
         "per_bin": _per_bin(yte, p, bte),
         "disclosure": DISCLOSURE,
     }

@@ -1,6 +1,6 @@
 {
   "versi": "cv_v1",
-  "dibuat": "2026-10-28T17:45:06",
+  "dibuat": "2026-10-28T18:26:28",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -27,7 +27,83 @@
     0.19585796812217088,
     0.23704683964742224
   ],
+  "rmse": 0.28350078996397415,
   "r2": 0.630483826303162,
+  "metrik_kategori": {
+    "akurasi": 0.6830065359477124,
+    "qwk": 0.6466680951360617,
+    "meleset_1_tingkat": 97,
+    "meleset_2_tingkat_atau_lebih": 0,
+    "tabel_silang": {
+      "Rendah": {
+        "Rendah": 80,
+        "Sedang": 35,
+        "Tinggi": 0,
+        "Sangat Tinggi": 0
+      },
+      "Sedang": {
+        "Rendah": 22,
+        "Sedang": 112,
+        "Tinggi": 19,
+        "Sangat Tinggi": 0
+      },
+      "Tinggi": {
+        "Rendah": 0,
+        "Sedang": 19,
+        "Tinggi": 16,
+        "Sangat Tinggi": 0
+      },
+      "Sangat Tinggi": {
+        "Rendah": 0,
+        "Sedang": 0,
+        "Tinggi": 2,
+        "Sangat Tinggi": 1
+      }
+    },
+    "per_kategori": [
+      {
+        "kategori": "Rendah",
+        "n": 115,
+        "tepat": 80,
+        "recall": 0.6956521739130435,
+        "bias": 0.12987563720790998,
+        "mae": 0.186312212802904
+      },
+      {
+        "kategori": "Sedang",
+        "n": 153,
+        "tepat": 112,
+        "recall": 0.7320261437908496,
+        "bias": 0.006510391949466585,
+        "mae": 0.20605588867704636
+      },
+      {
+        "kategori": "Tinggi",
+        "n": 35,
+        "tepat": 16,
+        "recall": 0.45714285714285713,
+        "bias": -0.322620500627368,
+        "mae": 0.34297407087046006
+      },
+      {
+        "kategori": "Sangat Tinggi",
+        "n": 3,
+        "tepat": 1,
+        "recall": 0.3333333333333333,
+        "bias": -0.43293238872619516,
+        "mae": 0.43293238872619516
+      }
+    ]
+  },
+  "metrik_skrining": {
+    "ambang": 2.5,
+    "positif_aktual": 38,
+    "ditandai": 38,
+    "auc": 0.8733307148468186,
+    "sensitivitas": 0.5,
+    "spesifisitas": 0.9291044776119403,
+    "ppv": 0.5
+  },
   "per_bin": [
     {
       "bin": 1,
@@ -121,7 +197,7 @@
     }
   ],
   "catatan_metrik": "Himpunan eval = populasi 306, jadi MAE mentah di sini sudah sama dengan MAE berbobot populasi. Angka ini BUKAN angka test (68 siswa ikut di dalam CV).",
-  "elapsed_detik": 3.8,
+  "elapsed_detik": 3.6,
   "disclosure": {
     "cv_bukan_test": "--mode cv memakai SELURUH 306 siswa, jadi 68 siswa uji ikut di dalam CV. Angka itu estimasi populasi, BUKAN angka uji.",
     "test_konfirmasi": "Split v1 (68 siswa) dipakai sekali sebagai konfirmasi pada --mode test, tidak dipakai memilih model, base, atau parameter apa pun.",
