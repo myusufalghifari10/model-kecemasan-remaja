@@ -63,10 +63,31 @@ cenderung menaksir rendah di ekor: pada CV hanya 22 dari 43 siswa berisiko tingg
 tertandai (sensitivitas 51%), dengan spesifisitas 94%. Label ini penanda awal, bukan
 penentuan status.
 
+## Penjelasan per siswa (SHAP)
+
+`--mode explain` menjawab "kenapa siswa ini ditandai": prediksi dipecah menjadi kontribusi
+tiap fitur. Karena model = `base + XGB` dan keduanya aditif:
+
+- bagian **PLS** linier → kontribusi eksak `koefisien × nilai terstandardisasi`;
+- bagian **XGBoost** pada residual → TreeSHAP bawaan XGBoost (`pred_contribs`), tanpa
+  library tambahan.
+
+Jumlah semua kontribusi + bias = skor prediksi persis (diperiksa setiap run, selisih
+~2e-07), dan kontribusi dirata-ratakan atas 6 model bag.
+
+```bash
+python src/train.py --mode explain --input siswa_baru.csv          # 5 fitur teratas
+python src/train.py --mode explain --input siswa_baru.csv --top 10
+```
+
+Keluaran `outputs/model/prediksi_penjelasan.csv`: `row_id, skor, status, fitur_1..n,
+kontribusi_1..n`. Kontribusi positif menaikkan skor, negatif menurunkan. Ini menjelaskan
+model, bukan sebab-akibat.
+
 ## Isi repo
 
 ```
-src/train.py            model + protokol evaluasi + inferensi (6 mode)
+src/train.py            model + protokol evaluasi + inferensi (7 mode)
 src/config.py           nama kolom, path, seed
 outputs/model/cv.json   hasil CV populasi 306 (MAE, R², per bin)
 outputs/model/per_bin.csv
@@ -90,6 +111,7 @@ python src/train.py --mode cv            # CV 5x6 -> outputs/model/cv.json
 python src/train.py --mode test          # 238 -> 68 (konfirmasi)
 python src/train.py --mode final         # bag 6 model -> model_bag.joblib
 python src/train.py --mode predict --input siswa_baru.csv   # skor + label
+python src/train.py --mode explain --input siswa_baru.csv   # skor + label + fitur teratas
 ```
 
 `--mode predict` membutuhkan CSV/parquet dengan 76 kolom input model (72 numerik + 4
