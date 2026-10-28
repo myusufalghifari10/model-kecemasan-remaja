@@ -13,13 +13,6 @@
       "akurasi_kategori": 0.6830065359477124,
       "qwk": 0.6466680951360617
     },
-    "test_68": {
-      "mae_raw": 0.2406653383851332,
-      "mae_berbobot": 0.22303426876156812,
-      "r2": 0.6883715087677621,
-      "akurasi_kategori": 0.7058823529411765,
-      "qwk": 0.7300516077808654
-    },
     "produksi": {
       "n_bag": 6,
       "mae_in_sample_bag": 0.12877312794362614,
@@ -55,24 +48,24 @@
       "byte": 7664
     },
     "src/buat_manifest.py": {
-      "sha256": "23af27cce22e8222046fa13bd21e2cd72d75629bdd4ad0d1091f87d0c2f3b4b3",
-      "byte": 5606
+      "sha256": "3a8debfacf96cf1426068c4dd2520fa09c3d8e1368cc51db94e48ca761907916",
+      "byte": 5232
     },
     "requirements.txt": {
       "sha256": "b37165828f32dc8e43082f9dcec6c35e0804473d875f28c560d99ff7c0c910ef",
       "byte": 203
     },
     "README.md": {
-      "sha256": "c9e16d4c84b66e87ec1e95c9aa3a29c4a375afa75b2932302d693d620adca3a2",
-      "byte": 13065
+      "sha256": "918dff6cfbd52ee58db5698d6d12960e1b0b8adad896ac3486bc95c20847b62a",
+      "byte": 12393
     },
     "docs/codebook.md": {
       "sha256": "cb2099b59092e5d69397a913d786d2039e7f6e40d83b1cc5752d25f9d40f3392",
       "byte": 6647
     },
     "docs/Laporan-Model-Kecemasan-Remaja.docx": {
-      "sha256": "75ac4c7dd8795a8a6dfecf5d0c69e2bd4bec008abdb5c0843a62c96f655d85a8",
-      "byte": 23129
+      "sha256": "5cbfb7f7b0c93fa6ecc25aadf3c8df130de5e9d10e51020e212e6d8fe38b3bac",
+      "byte": 21353
     },
     "data/split_v1.json": {
       "sha256": "8baec652ae3c0db30d694b6a67597dc725711593bd404e18b0c01d06fd3910a6",
@@ -85,10 +78,6 @@
     "outputs/model/per_bin.csv": {
       "sha256": "34358322760cb6ba37393e03575040d7cc71cd915fae91eae7fb98d758a46466",
       "byte": 906
-    },
-    "outputs/model/test_1d5f63ef.json": {
-      "sha256": "7b921e59896192eee49255cda379056b499f152d9d528c53c39d9f7f903bd6ee",
-      "byte": 5706
     },
     "outputs/model/produksi.json": {
       "sha256": "75a1c419b16d52b17dedb24e295d52d526a1e20a043e41e1345d150c00f60732",

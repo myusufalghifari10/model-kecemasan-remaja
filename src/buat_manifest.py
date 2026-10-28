@@ -28,7 +28,7 @@ PUBLIK = [
     "docs/Laporan-Model-Kecemasan-Remaja.docx",
     "data/split_v1.json",
     "outputs/model/cv.json", "outputs/model/per_bin.csv",
-    "outputs/model/test_1d5f63ef.json", "outputs/model/produksi.json",
+    "outputs/model/produksi.json",
     "outputs/model/perbandingan_regresi.json", "outputs/model/model_bag.joblib",
 ]
 PRIVAT = ["data/features.parquet", "outputs/model/oof.csv", "data/raw/INPUT DATA  (1).sav"]
@@ -79,8 +79,7 @@ def main() -> int:
     if a.check:
         return periksa()
 
-    cv, te, pr = baca("outputs", "model", "cv.json"), baca("outputs", "model", "test_1d5f63ef.json"), \
-        baca("outputs", "model", "produksi.json")
+    cv, pr = baca("outputs", "model", "cv.json"), baca("outputs", "model", "produksi.json")
     reg = baca("outputs", "model", "perbandingan_regresi.json")
 
     berkas, hilang = {}, []
@@ -107,9 +106,6 @@ def main() -> int:
             "cv": {"n_baris": cv["n_baris"], "mae": cv["mae"], "mae_ci95": cv["mae_ci95"],
                    "r2": cv["r2"], "akurasi_kategori": cv["kategori"]["akurasi"],
                    "qwk": cv["kategori"]["qwk"]},
-            "test_68": {"mae_raw": te["mae_raw"], "mae_berbobot": te["mae_berbobot"],
-                        "r2": te["r2"], "akurasi_kategori": te["kategori"]["akurasi"],
-                        "qwk": te["kategori"]["qwk"]},
             "produksi": {"n_bag": len(pr["pemilihan_model"]["indeks_0based"]), "mae_in_sample_bag": pr["mae_in_sample_bag"],
                          "r2_in_sample_bag": pr["r2_in_sample_bag"],
                          "kategori_ambang": pr["kategori_ambang"]},
@@ -123,12 +119,11 @@ def main() -> int:
     }
     if not privat:
         hasil["catatan_privat"] = ("berkas privat tidak ada di mesin ini; angka tetap bisa dicek "
-                                  "terhadap cv.json / test / produksi.json yang ikut repo")
+                                  "terhadap cv.json / produksi.json yang ikut repo")
     Path(a.output).write_text(json.dumps(hasil, indent=2, ensure_ascii=False) + "\n")
     print(f"[manifest] {len(berkas)} berkas publik"
           f"{f', {len(privat)} privat' if privat else ''} -> {a.output}")
-    print(f"[manifest] CV MAE {cv['mae']:.16f} | test {te['mae_raw']:.6f} | "
-          f"in-sample {pr['mae_in_sample_bag']:.6f}")
+    print(f"[manifest] CV MAE {cv['mae']:.16f} | in-sample {pr['mae_in_sample_bag']:.6f}")
     return 0
 
 

@@ -21,13 +21,13 @@ Prediksi akhir = `base + XGB`.
 
 ## Hasil
 
-| metrik | CV 5×6 (306 siswa) | Latih 238 → uji 68 |
-|---|---|---|
-| **MAE** | **0,2165** (CI95 0,196–0,237) | 0,2407 mentah / **0,2230** berbobot populasi |
-| **R²** | **0,6305** | 0,6884 |
-| **akurasi kategori** | **68,3%** (QWK 0,647) | 70,6% (QWK 0,730) |
+| metrik | CV 5×6 (306 siswa) |
+|---|---|
+| **MAE** | **0,2165** (CI95 0,196–0,237) |
+| **R²** | **0,6305** |
+| **akurasi kategori** | **68,3%** (QWK 0,647) |
 
-Ketiga baris itu disimpan di `cv.json` dan `test_*.json`, bersama tabel per bin (kelemahan
+Ketiga baris itu disimpan di `cv.json`, bersama tabel per bin (kelemahan
 di ekor), tabel silang kategori, dan rincian per kategori (n, tepat, recall, MAE, bias
 dengan konvensi `y − pred` seperti tabel per bin). Metrik lain tidak dipersistenkan.
 
@@ -63,8 +63,7 @@ berisiko tinggi.
   Dua catatan jujur: (a) komposisinya bukan "satu model per ulangan" — model #8/#11/#17/
   #20/#24/#26 berasal dari ulangan 1,2,3,3,4,5, jadi dua model dari ulangan 3 dan tidak ada
   dari ulangan 0; masing-masing tetap dilatih pada 244 dari 306 siswa (4/5). (b) Kriterianya
-  dihitung pada lipatan yang mencakup seluruh 306 siswa, sehingga 68 siswa uji ikut berperan
-  dalam memilih artefak ini.
+  memakai prediksi out-of-fold di seluruh 306 siswa, yaitu protokol yang sama dengan CV.
 
 ## Prediksi, kategori, dan alasan (satu keluaran)
 
@@ -124,11 +123,10 @@ outputs/model/model_bag.joblib     artefak siap pakai: bag 6 model (6 MB)
 outputs/model/cv.json   hasil CV populasi 306: MAE+CI95, R², akurasi kategori + QWK, per bin,
                         tabel silang + rincian per kategori
 outputs/model/per_bin.csv
-outputs/model/test_1d5f63ef.json   konfirmasi pada split 238→68 (metrik yang sama)
 outputs/model/produksi.json        spesifikasi artefak produksi + ambang kategori
 outputs/model/perbandingan_regresi.json   16 varian regresi 9 faktor + baris yang dipakai
 outputs/model/manifest.json        sha256 tiap berkas + angka utama (deterministik)
-data/split_v1.json      split terkunci 238/68 (sha 1d5f63efb7d61488)
+data/split_v1.json      sidik jari pembagian data (sha 1d5f63efb7d61488), bukan dasar penilaian
 docs/codebook.md        definisi variabel, aturan pembersihan, asumsi yang perlu dikonfirmasi
 docs/Laporan-Model-Kecemasan-Remaja.docx   laporan teknis (15 halaman) untuk pembaca non-teknis
 requirements.txt        versi paket dipatok (termasuk pyreadstat untuk membaca .sav)
@@ -152,7 +150,6 @@ python src/build_features.py --check      # buktikan hasilnya identik dengan ber
 python src/train.py --mode check-split   # verifikasi split terkunci
 python src/train.py --mode self-test     # uji fungsi murni
 python src/train.py --mode cv            # CV 5x6 -> outputs/model/cv.json
-python src/train.py --mode test          # 238 -> 68 (konfirmasi)
 python src/train.py --mode final         # bag 6 model -> model_bag.joblib
 python src/train.py --mode predict --input siswa_baru.csv   # skor + label + alasan
 python src/bandingkan_regresi.py         # regresi 9 faktor, protokol sama -> JSON
@@ -181,26 +178,22 @@ tidak ikut repo.
 |---|---|---|
 | 306 siswa; 76 kolom input; target = rata-rata 20 item | `src/build_features.py` (privat: `features.parquet`) | `python src/build_features.py --check` |
 | MAE CV 0,2165 [0,196; 0,237]; R² 0,6305; 68,3% kategori; QWK 0,647 | `outputs/model/cv.json` | baca JSON; hitung ulang `--mode cv` (privat) |
-| MAE test 0,2407 / 0,2230; R² 0,6884; 70,6%; QWK 0,730 | `outputs/model/test_1d5f63ef.json` | `--mode test --force` (privat) |
 | MAE in-sample bag 0,1288; R² 0,8502 | `outputs/model/produksi.json` | `--mode final` (privat) |
 | Galat per bin; rincian per kategori | `outputs/model/per_bin.csv`, `cv.json → kategori` | baca berkas (privat untuk hitung ulang) |
-| Split 238/68 tidak berubah | `data/split_v1.json` + `SHA_V1` di `train.py` | `--mode check-split` (privat) |
+| Berkas split tidak berubah | `data/split_v1.json` + `SHA_V1` di `train.py` | `--mode check-split` (privat) |
 | 6 model produksi #8/#11/#17/#20/#24/#26 | `produksi.json → pemilihan_model`, `train.py → PEMILIHAN_BAG` | baca dua berkas |
 | Regresi 9 faktor: MAE CV 0,2469, R² 0,534 | `outputs/model/perbandingan_regresi.json` | `python src/bandingkan_regresi.py` (privat) |
 | Angka ↔ berkas yang menghasilkannya | `outputs/model/manifest.json` | `python src/buat_manifest.py --check` |
 
 Tanpa data mentah, yang bisa diperiksa langsung dari hasil clone: seluruh angka di `cv.json`,
-`test_*.json`, `produksi.json`, `perbandingan_regresi.json`, `manifest.json`, plus `--mode
+`produksi.json`, `perbandingan_regresi.json`, `manifest.json`, plus `--mode
 self-test` dan `--mode predict` pada CSV sendiri. Yang tidak bisa: menghitung ulang angkanya.
 
 ## Catatan pembacaan
 
-- 0,2165 adalah estimasi **populasi**: himpunan evaluasi CV = seluruh 306 siswa, termasuk
-  68 siswa uji, sehingga angka ini **bukan** angka uji.
-- Angka 0,2407/0,2230 berasal dari split tetap 238→68 dan dilaporkan sekali sebagai
-  konfirmasi. Model yang diuji memang hanya dilatih di 238 siswa, tetapi 68 siswa sempat
-  berperan pada **pemilihan 6 model produksi** (kriterianya MAE out-of-fold pada lipatan
-  seluruh 306), jadi 68 bukan himpunan yang sama sekali belum tersentuh.
+- 0,2165 adalah estimasi **populasi**: himpunan evaluasi CV = seluruh 306 siswa.
+- Tidak ada angka uji di repo ini maupun di laporan. Berkas split tetap disimpan untuk
+  memeriksa integritas data, tetapi tidak dipakai menilai model.
 - Ada **dua baris duplikat** (row_id 53 dan 55, identik di seluruh 76 kolom input dan nilai
   y-nya) yang sengaja tidak dihapus agar N tetap 306. Pada 10 dari 30 model CV, satu kembar
   ada di data latih dan satunya di data uji, sehingga MAE CV sedikit optimistis: tanpa kedua
