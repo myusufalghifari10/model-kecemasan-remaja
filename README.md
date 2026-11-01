@@ -88,11 +88,12 @@ Skema kategori: tiga tingkat, dua ambang.
 
 > Ambang 1,70 dan 2,20 dipilih dari grid dua parameter pada prediksi out-of-fold 306 siswa
 > dengan kriteria **QWK, bukan akurasi**: memilih demi akurasi menghasilkan skema yang
-> menumpuk 264 dari 306 siswa di satu kelas dengan akurasi 88,6% tetapi QWK 0,54. Keduanya
+> menumpuk hampir semua siswa di satu kelas (264 dari 306 siswa aktual, dan 281 dari 306
+> prediksi menunjuk ke kelas itu) dengan akurasi 88,6% tetapi QWK 0,54. Keduanya
 > kira-kira rata-rata sampel (1,967) dikurangi 0,57 dan ditambah 0,50 simpangan baku (0,467).
 > Uji bersarang, yaitu ambang dipilih di lipatan latih lalu dinilai di lipatan uji selama 30
-> lipatan, memberi **QWK 0,689 dan akurasi 66,0%**, jadi keunggulannya tidak hanya muncul di
-> data yang dipakai memilih. Kedua angka itu dihitung ulang oleh `python src/uji_ambang.py`.
+> lipatan, memberi **QWK gabungan 0,726 dan akurasi 68,3%** (rata-rata per lipatan 0,679 dan
+> 65,3%), jadi keunggulannya tidak hanya muncul di data yang dipakai memilih. Kedua angka itu dihitung ulang oleh `python src/uji_ambang.py`.
 > Skema empat tingkat 115/153/35/3 dari dokumen analisis sebelumnya tetap dicatat sebagai
 > pembanding, tetapi tidak dipakai: kelas teratasnya hanya 3 siswa dan tidak dapat
 > dipelajari (recall 1 dari 3).
@@ -138,7 +139,7 @@ outputs/model/manifest.json        sha256 tiap berkas + angka utama (determinist
 outputs/model/uji_ambang.json      grid ambang kategori, uji bersarang, pembanding 4 tingkat
 data/split_v1.json      sidik jari pembagian data (sha 1d5f63efb7d61488), bukan dasar penilaian
 docs/codebook.md        definisi variabel, aturan pembersihan, asumsi yang perlu dikonfirmasi
-docs/Laporan-Model-Kecemasan-Remaja.docx   laporan teknis (15 halaman) untuk pembaca non-teknis
+docs/Laporan-Model-Kecemasan-Remaja.docx   laporan teknis (17 halaman) untuk pembaca non-teknis
 requirements.txt        versi paket dipatok (termasuk pyreadstat untuk membaca .sav)
 ```
 
@@ -195,7 +196,7 @@ tidak ikut repo.
 | Berkas split tidak berubah | `data/split_v1.json` + `SHA_V1` di `train.py` | `--mode check-split` (privat) |
 | 6 model produksi #8/#11/#17/#20/#24/#26 | `produksi.json → pemilihan_model`, `train.py → PEMILIHAN_BAG` | baca dua berkas |
 | Regresi 9 faktor: MAE CV 0,2469, R² 0,534 | `outputs/model/perbandingan_regresi.json` | `python src/bandingkan_regresi.py` (privat) |
-| Ambang 1,70/2,20: QWK 0,734, akurasi 69,3%; uji bersarang QWK 0,689, akurasi 66,0% | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
+| Ambang 1,70/2,20: QWK 0,734, akurasi 69,3%; uji bersarang penuh: QWK gabungan 0,726, akurasi 68,3% | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
 | Angka ↔ berkas yang menghasilkannya | `outputs/model/manifest.json` | `python src/buat_manifest.py --check` |
 
 Tanpa data mentah, yang bisa diperiksa langsung dari hasil clone: seluruh angka di `cv.json`,

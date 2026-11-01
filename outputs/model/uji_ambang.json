@@ -1,5 +1,5 @@
 {
-  "versi": "uji_ambang_v1",
+  "versi": "uji_ambang_v2",
   "masukan": {
     "prediksi": "outputs/model/oof.csv",
     "target": "data/features.parquet (y_kontinu)",
@@ -53,6 +53,28 @@
         0.9810606060606061
       ]
     }
+  },
+  "acuan_ambang_tetap": {
+    "b1": 1.7,
+    "b2": 2.2,
+    "akurasi": 0.6928104575163399,
+    "qwk": 0.7342465753424657,
+    "meleset_2_tingkat": 1,
+    "n_aktual": [
+      103,
+      115,
+      88
+    ],
+    "n_prediksi": [
+      87,
+      132,
+      87
+    ],
+    "recall": [
+      0.6796116504854369,
+      0.6695652173913044,
+      0.7386363636363636
+    ]
   },
   "kandidat": [
     {
@@ -173,37 +195,42 @@
   ],
   "bersarang": {
     "n_lipatan": 30,
-    "pilih_dengan_qwk": {
-      "akurasi": 0.6599682707562136,
-      "qwk": 0.6890861187068861,
-      "ambang_tersering": [
-        [
-          [
-            1.7,
-            2.2
-          ],
-          15
-        ],
-        [
-          [
-            1.7,
-            2.05
-          ],
-          4
-        ],
-        [
-          [
-            1.75,
-            2.2
-          ],
-          4
-        ]
+    "inner_folds": 5,
+    "rata_rata_per_lipatan": {
+      "akurasi": 0.6529790234443859,
+      "qwk": 0.6789721150615949
+    },
+    "gabungan_306": {
+      "akurasi": 0.6830065359477124,
+      "qwk": 0.725486213375311,
+      "aktual_dikunci_di": [
+        1.7,
+        2.2
       ]
     },
-    "ambang_tetap_1_70_2_20": {
-      "akurasi": 0.6926582055349901,
-      "qwk": 0.7326160791982846
-    }
+    "ambang_tersering": [
+      [
+        [
+          1.8,
+          2.2
+        ],
+        12
+      ],
+      [
+        [
+          1.75,
+          2.2
+        ],
+        5
+      ],
+      [
+        [
+          1.75,
+          2.05
+        ],
+        3
+      ]
+    ]
   },
   "pembanding_4_kategori": {
     "akurasi": 0.6830065359477124,
