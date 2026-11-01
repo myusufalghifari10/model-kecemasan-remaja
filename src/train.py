@@ -96,11 +96,13 @@ PREDIKSI_CSV = OUT_DIR / "prediksi.csv"
 # Tiga kategori kecemasan: Rendah <= 1,70; Sedang 1,70-2,20; Tinggi > 2,20.
 # Ambang dipilih dari grid 2 parameter pada prediksi out-of-fold 306 siswa, dengan
 # kriteria QWK, BUKAN akurasi: memilih demi akurasi menghasilkan skema yang menumpuk
-# hampir semua siswa di satu kelas (akurasi 0,87 tapi QWK 0,46). Nilai terpilih berimpit
-# dengan rata-rata sampel 1,967 dan simpangan baku 0,467, yaitu kira-kira rata-rata
-# -0,57 SD dan +0,50 SD. Uji bersarang (ambang dipilih di lipatan latih, dinilai di
-# lipatan uji) memberi QWK 0,689 dan akurasi 0,660, jadi ambang ini tidak hanya cocok
-# di data yang dipakai memilihnya.
+# hampir semua siswa di satu kelas (264 dari 306 aktual, 281 prediksi; akurasi 0,886
+# tapi QWK 0,54). Nilai terpilih berimpit dengan rata-rata sampel 1,967 dan simpangan
+# baku 0,467, yaitu kira-kira rata-rata -0,57 SD dan +0,50 SD. Uji bersarang penuh
+# (ambang dipilih lewat CV 5 lipatan di dalam lipatan latih, model dilatih ulang)
+# memberi QWK gabungan 0,726 dan akurasi 0,683 (rata-rata per lipatan 0,679 / 0,653),
+# jadi ambang ini tidak hanya cocok di data yang dipakai memilihnya. Dihitung ulang
+# oleh src/uji_ambang.py.
 KATEGORI_AMBANG = (1.70, 2.20)
 KATEGORI_LABEL = ("Rendah", "Sedang", "Tinggi")
 N_PENJELASAN = 5      # jumlah fitur teratas yang dilaporkan per siswa
@@ -671,7 +673,8 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
             "kriteria": ("MAE out-of-fold tiap model (61-62 siswa yang tidak dilihatnya) "
                          "dibagi rata-rata MAE ulangannya untuk koreksi kesulitan lipatan"),
             "catatan": ("kriteria tidak memakai skor pada 306 siswa; keuntungan pemilihan "
-                        "semacam ini terukur ~0,003 MAE pada uji bersarang"),
+                        "semacam ini terukur ~0,003 MAE pada uji bersarang yang dijalankan di luar repo, "
+                        "jadi angkanya tidak dapat dihitung ulang dari sini"),
         },
         "n_baris": int(len(df)),
         "n_fitur": int(x.shape[1]),

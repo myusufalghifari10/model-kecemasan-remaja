@@ -78,6 +78,7 @@ Ambang `1.70` dan `2.20` pada `y_kontinu`; keduanya kira-kira rata-rata sampel (
 
 - Ambang dipilih dari grid dua parameter pada prediksi out-of-fold dengan kriteria **QWK**. Memilih ambang demi akurasi menghasilkan skema yang menumpuk hampir semua siswa di satu kelas (264 dari 306 siswa aktual, dan 281 dari 306 prediksi menunjuk ke kelas itu) dengan akurasi 88,6% tetapi QWK 0,54, jadi akurasi tidak dipakai sebagai kriteria. Kedua angka dihitung ulang oleh `python src/uji_ambang.py`.
 - Uji bersarang penuh (ambang dipilih lewat CV 5 lipatan di dalam lipatan latih, model dilatih ulang, lalu dinilai di lipatan uji, 30 lipatan): **QWK gabungan 306 siswa 0,726 dan akurasi 68,3%**; rata-rata per lipatan 0,679 dan 65,3%. Acuan ambang tetap pada prediksi yang sama 0,734 / 69,3%, jadi optimisme pemilihan ambang sekitar 0,008 QWK.
+  Bedanya dua estimand itu: `gabungan_306` mengunci kategori aktual di 1,70/2,20 (sebanding dengan angka 0,734), sedangkan `rata_rata_per_lipatan` mengategorikan nilai aktual di lipatan uji dengan ambang lipatan itu sendiri. Yang dibandingkan dengan 0,734 adalah angka gabungan.
 - Skema empat tingkat dokumen sebelumnya (115/153/35/3 dengan ambang 1,75/2,50/3,25) tidak dipakai: kelas teratas hanya 3 siswa dengan recall 1 dari 3 sehingga tidak dapat dipertanggungjawabkan. Angka itu tetap dicatat sebagai pembanding.
 - `y_biner` di `features.parquet` tetap memakai 2,5 dan **bukan** kategori yang dilaporkan; ia warisan definisi biner lama dan hanya disimpan untuk kompatibilitas.
 

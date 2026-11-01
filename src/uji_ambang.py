@@ -176,6 +176,12 @@ def main() -> int:
     bersarang = {
         "n_lipatan": len(acc_lipat),
         "inner_folds": a.inner_folds,
+        "definisi": {
+            "rata_rata_per_lipatan": ("QWK rata-rata 30 lipatan; nilai aktual di lipatan uji "
+                                      "dikategorikan dengan ambang lipatan itu sendiri"),
+            "gabungan_306": ("QWK satu tabel 306 siswa; kategori aktual dikunci di 1,70/2,20, "
+                             "prediksi memakai ambang lipatannya (sebanding dengan acuan)"),
+        },
         "rata_rata_per_lipatan": {
             "akurasi": float(np.mean(acc_lipat)),
             "qwk": float(np.mean(qwk_lipat)),
