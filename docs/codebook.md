@@ -9,6 +9,8 @@ Disusun dari data mentah 306 siswa SMK, Kec. Kresek, Kab. Tangerang (survei cros
 | `y_kontinu` | Rata-rata 20 item kecemasan/stres (skala 1=Tidak pernah … 4=Sangat sering) | 1.00–4.00 | 1.00–3.50 (mean 1.97, SD 0.47) |
 | `y_biner` | 1 bila `y_kontinu` ≥ 2.5 (proxy kategori *cemas tinggi*) | 0/1 | 1 = 43 siswa (14.1%) |
 
+> **Dua konvensi pada angka 2,5.** `y_biner` memakai **≥ 2,5** (43 siswa, 14,1%). Angka sensitivitas/spesifisitas di laporan memakai **> 2,50** (38 siswa) karena kalimatnya berbunyi "di atas 2,50". Bedanya 5 siswa yang nilainya tepat 2,50: dengan ≥ sensitivitas 51,2% dan spesifisitas 93,9%, dengan > sensitivitas 50,0% dan spesifisitas 92,9%. Jangan mencampur keduanya.
+
 > **Catatan ketidakseimbangan kelas:** hanya 43/306 siswa (14.1%) berada di kategori positif. Model biner wajib memakai `scale_pos_weight` atau `class_weight`, dan dievaluasi dengan AUC + Brier score (bukan accuracy).
 
 ## 18 Fitur Input
@@ -61,6 +63,7 @@ Urutan kolom pada matriks latih bersifat tetap; model memakai urutan itu apa ada
 | `KECEMSANSTRESS9` (salah ketik) | Nama kolom item 9 → `KECEMASANSTRESS9` |
 
 - **Audit arah item (hasil verifikasi).** `REVERSE_ITEMS=[SOSIAL3]` sudah lengkap: semua item bernegasi lain (KECEMASANSTRESS2/9/16/17/22, MASADEPAN3, COPING16–18) sengaja TIDAK di-reverse karena tetap searah konstruk/subskalanya (COPING16–18 = subskala `coping_negatif`, skor tinggi = makin negatif).
+- **Peringatan pada SOSIAL3 (temuan audit, perlu keputusan pembimbing).** Pembalikan `6 − x` menghasilkan `f_sosial` yang korelasinya dengan skor kecemasan **−0,381**, sedangkan versi tanpa pembalikan **+0,536**. Nilai mentah item itu juga berkorelasi **+0,209** dengan skor kecemasan, dan model memberi sumbangan lebih tinggi pada siswa yang menjawab "selalu tidak tertekan" (sumbangan +0,098 pada nilai tersimpan 1, yaitu mentah 5) daripada yang menjawab "tidak pernah tidak tertekan" (−0,018 pada nilai tersimpan 5, mentah 1). Artinya pada data ini item tersebut berperilaku seolah **tidak** perlu dibalik. Pipeline tetap mengikuti `config.REVERSE_ITEMS` agar konsisten dan dapat direproduksi, tetapi arah item ini harus diputuskan bersama pembimbing sebelum hasilnya ditafsirkan secara substantif.
 - **Sensitivitas item 12 (nilai 5).** Nilai invalid diisi median kolom; alternatif isi 4 teruji TIDAK mengubah label `y_biner` siswa mana pun.
 
 ## Kategori yang Dilaporkan (3 Tingkat)
@@ -73,7 +76,7 @@ Ambang `1.70` dan `2.20` pada `y_kontinu`; keduanya kira-kira rata-rata sampel (
 | Sedang | 1,70 – 2,20 | 115 |
 | Tinggi | > 2,20 | 88 |
 
-- Ambang dipilih dari grid dua parameter pada prediksi out-of-fold dengan kriteria **QWK**. Memilih ambang demi akurasi menghasilkan skema yang menumpuk 238 siswa di satu kelas (akurasi 0,83 tetapi QWK 0,56), jadi akurasi tidak dipakai sebagai kriteria.
+- Ambang dipilih dari grid dua parameter pada prediksi out-of-fold dengan kriteria **QWK**. Memilih ambang demi akurasi menghasilkan skema yang menumpuk 264 dari 306 siswa di satu kelas (akurasi 88,6% tetapi QWK 0,54), jadi akurasi tidak dipakai sebagai kriteria. Kedua angka dihitung ulang oleh `python src/uji_ambang.py`.
 - Uji bersarang (ambang dipilih di lipatan latih, dinilai di lipatan uji, 30 lipatan): **QWK 0,689, akurasi 66,0%**. Angka pada populasi (0,734 / 69,3%) karena itu sedikit optimistis, sebagaimana setiap ambang yang dipilih pada data yang sama.
 - Skema empat tingkat dokumen sebelumnya (115/153/35/3 dengan ambang 1,75/2,50/3,25) tidak dipakai: kelas teratas hanya 3 siswa dengan recall 1 dari 3 sehingga tidak dapat dipertanggungjawabkan. Angka itu tetap dicatat sebagai pembanding.
 - `y_biner` di `features.parquet` tetap memakai 2,5 dan **bukan** kategori yang dilaporkan; ia warisan definisi biner lama dan hanya disimpan untuk kompatibilitas.
@@ -82,7 +85,7 @@ Ambang `1.70` dan `2.20` pada `y_kontinu`; keduanya kira-kira rata-rata sampel (
 
 - **Label status orang tua.** Kategori 1 berlabel *"kedua orang tua meninggal dunia"* tapi 226 dari 240 siswa kategori tersebut tinggal bersama ayah dan ibu → label kemungkinan salah ketik. Asumsi kerja: kategori 1 = **keluarga utuh**. Kategori 2 (9 siswa, pola mencampur) dan kategori 5 (4 siswa, tanpa label) digabung ke **lainnya**. Sisa kategori 3 & 4 dipakai sesuai label aslinya. 3 versi coding disiapkan untuk sensitivity analysis, namun BELUM dijalankan (fase robustness terpisah).
 - **Ambang `y_biner`.** 2,5 dipilih sebagai titik tengah antara pilihan "kadang-kadang" (2) dan "sering" (3) — siswa dengan rata-rata skor di atasnya masuk label biner cemas tinggi (lihat bagian Kategori yang Dilaporkan untuk kategori tiga tingkat yang dipakai model); ambang alternatif 2,0 dan 2,3 menghasilkan 42,2% dan 25,8% positif — dipakai sebagai bahan diskusi bila dosen ingin prevalensi lebih tinggi.
-- **Temuan penting — `f_sosial` berbeda dari analisis sebelumnya.** Rata-rata blok sosial TANPA reverse-scoring adalah **2,15** (angka yang dipakai di analisis deskriptif & regresi lama), sedangkan pipeline kita memakai mean **2,74** setelah `SOSIAL3` di-reverse. Item itu berbunyi *"Saya merasa TIDAK tertekan ketika mengalami masalah…"* — arahnya berlawanan, sehingga skor sebelumnya sempat menyamakan "sering tidak tertekan" dengan "tinggi tekanan sosial". Karena faktor sosial menjadi prediktor terkuat di regresi lama (β=0,241), temuan itu perlu dihitung ulang. Pipeline ini sengaja mengikuti aturan `config.REVERSE_ITEMS` (reverse = benar).
+- **Temuan penting — `f_sosial` berbeda dari analisis sebelumnya.** Rata-rata blok sosial TANPA reverse-scoring adalah **2,15** (angka yang dipakai di analisis deskriptif & regresi lama), sedangkan pipeline kita memakai mean **2,74** setelah `SOSIAL3` di-reverse; korelasinya dengan skor kecemasan berubah dari **+0,536** menjadi **−0,381**. Item itu berbunyi *"Saya merasa TIDAK tertekan ketika mengalami masalah…"* — arahnya berlawanan, sehingga skor sebelumnya sempat menyamakan "sering tidak tertekan" dengan "tinggi tekanan sosial". Karena faktor sosial menjadi prediktor terkuat di regresi lama (β=0,241), koefisien sosial di regresi pembanding tidak boleh dibandingkan langsung dengan angka lama. Pipeline ini sengaja mengikuti aturan `config.REVERSE_ITEMS`, tetapi lihat peringatan pada SOSIAL3 di atas: data ini berperilaku sebaliknya, jadi arah item menunggu keputusan pembimbing.
 - **Baris duplikat.** Dua baris identik di seluruh kolom tidak dihapus (N tetap 306) agar selaras dengan analisis deskriptif sebelumnya; ditandai saat audit data: row_id 53 dan 55, y = 1,65. Implikasi evaluasi (terukur, bukan perkiraan): pasangan kembar terpisah ke data latih dan data uji pada 10 dari 30 model CV, dan tanpa kedua baris itu MAE CV menjadi 0,2179 bukan 0,2165 — optimisme **0,0013 (0,6%)**.
 
 ## Pemakaian Etis

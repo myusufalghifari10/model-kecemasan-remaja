@@ -1,8 +1,9 @@
 # Model Risiko Kecemasan Remaja
 
-Prediksi skor kecemasan siswa SMK dari 88 fitur kuesioner: 58 item mentah (18 item faktor
-tekanan, 18 coping, 10 perilaku sehat, 12 dukungan lingkungan), 13 skor faktor, dan 4
-variabel demografi. Target `y_kontinu` = rata-rata 20 item kecemasan (skala 1–4).
+Prediksi skor kecemasan siswa SMK dari 76 variabel dasariah: 58 item mentah (18 item faktor
+tekanan, 18 coping, 10 perilaku sehat, 12 dukungan lingkungan), 13 skor faktor, umur, dan 4
+variabel demografi. Setelah penjabaran menjadi 88 kolom. Target `y_kontinu` = rata-rata 20
+item kecemasan (skala 1–4).
 
 Data: 306 siswa, survei cross-sectional. Lihat `docs/codebook.md`.
 
@@ -15,7 +16,8 @@ Dua tahap, keduanya dilatih **di dalam lipatan** pada data latih lipatan saja:
    umum" yang stabil pada 88 fitur Likert yang saling berkorelasi. Dengan begitu pohon
    hanya perlu mempelajari simpangannya, bukan memprediksi y dari nol.
 2. **XGBoost** (`objective = reg:absoluteerror`) pada residual `y − base`, dengan bobot per
-   bin skor kecemasan (bobot populasi, cap 3,0).
+   bin skor kecemasan: `min(3, akar(median jumlah bin / jumlah bin itu))`, lalu dinormalkan
+   rata-rata 1 dan dihitung dari lipatan latih saja.
 
 Prediksi akhir = `base + XGB`.
 
@@ -54,16 +56,19 @@ berisiko tinggi.
   yang tidak pernah melihatnya; 1.836 prediksi dirata-ratakan menjadi 306 prediksi. Dari
   sinilah angka 0,2165 berasal.
 - **Produksi** — 6 model: **#8, #11, #17, #20, #24, #26**. Dipilih dengan kriteria
-  out-of-fold: tiap model dinilai hanya pada 61 siswa yang tidak dilihatnya, lalu MAE itu
+  out-of-fold: tiap model dinilai hanya pada 61–62 siswa yang tidak dilihatnya, lalu MAE itu
   dibagi rata-rata MAE ulangannya untuk meredam tingkat kesulitan lipatan. Kriteria ini
   tidak memakai skor pada 306 siswa yang menjadi data latih model, jadi bukan pemilihan
   berdasarkan hafalan. Keuntungan pemilihan semacam ini terukur **±0,003 MAE** pada uji
-  bersarang (memilih di separuh siswa buta, dinilai di separuh lain: 0,2454 vs 0,2485 untuk
-  bag kanonik, menang 383/500) — kecil, dan estimasi performa untuk siswa baru tetap 0,2165.
+  bersarang yang dijalankan di luar repo (memilih di separuh siswa buta, dinilai di separuh
+  lain: 0,2454 vs 0,2485 untuk bag kanonik, menang 383/500). Skrip uji itu tidak disertakan,
+  jadi kedua angka tersebut tidak dapat dihitung ulang dari repo. Estimasi performa untuk
+  siswa baru tetap 0,2165.
   Dua catatan jujur: (a) komposisinya bukan "satu model per ulangan" — model #8/#11/#17/
   #20/#24/#26 berasal dari ulangan 1,2,3,3,4,5, jadi dua model dari ulangan 3 dan tidak ada
-  dari ulangan 0; masing-masing tetap dilatih pada 244 dari 306 siswa (4/5). (b) Kriterianya
-  memakai prediksi out-of-fold di seluruh 306 siswa, yaitu protokol yang sama dengan CV.
+  dari ulangan 0; masing-masing tetap dilatih pada 244 atau 245 dari 306 siswa (4/5).
+  (b) Kriterianya memakai prediksi out-of-fold di seluruh 306 siswa, protokol yang sama
+  dengan CV.
 
 ## Prediksi, kategori, dan alasan (satu keluaran)
 
@@ -83,16 +88,17 @@ Skema kategori: tiga tingkat, dua ambang.
 
 > Ambang 1,70 dan 2,20 dipilih dari grid dua parameter pada prediksi out-of-fold 306 siswa
 > dengan kriteria **QWK, bukan akurasi**: memilih demi akurasi menghasilkan skema yang
-> menumpuk 238 siswa di satu kelas (akurasi 0,83 tetapi QWK 0,56). Keduanya kira-kira
-> rata-rata sampel (1,967) ∓ 0,5 simpangan baku (0,467). Uji bersarang, yaitu ambang dipilih
-> di lipatan latih lalu dinilai di lipatan uji selama 30 lipatan, memberi **QWK 0,689 dan
-> akurasi 66,0%**, jadi keunggulannya tidak hanya muncul di data yang dipakai memilih.
+> menumpuk 264 dari 306 siswa di satu kelas dengan akurasi 88,6% tetapi QWK 0,54. Keduanya
+> kira-kira rata-rata sampel (1,967) dikurangi 0,57 dan ditambah 0,50 simpangan baku (0,467).
+> Uji bersarang, yaitu ambang dipilih di lipatan latih lalu dinilai di lipatan uji selama 30
+> lipatan, memberi **QWK 0,689 dan akurasi 66,0%**, jadi keunggulannya tidak hanya muncul di
+> data yang dipakai memilih. Kedua angka itu dihitung ulang oleh `python src/uji_ambang.py`.
 > Skema empat tingkat 115/153/35/3 dari dokumen analisis sebelumnya tetap dicatat sebagai
 > pembanding, tetapi tidak dipakai: kelas teratasnya hanya 3 siswa dan tidak dapat
 > dipelajari (recall 1 dari 3).
 
 Akurasi kategori pada CV (prediksi OOF tiap siswa dibanding kategorinya yang sebenarnya):
-**69,3% tepat**, 30,7% meleset satu tingkat, 1 siswa meleset dua tingkat, **QWK 0,734**.
+**69,3% tepat**, 30,4% meleset satu tingkat, 1 siswa meleset dua tingkat, **QWK 0,734**.
 Recall tiap tingkat 68% / 67% / 74%, jauh lebih seimbang daripada skema empat tingkat
 (70% / 73% / 46% / 33%).
 
@@ -121,6 +127,7 @@ src/config.py           nama kolom, path, seed
 src/build_features.py   data mentah .sav -> matriks fitur (tahap 1, aturan cleaning)
 src/bandingkan_regresi.py     regresi 9 faktor di protokol yang sama
 src/buat_manifest.py    sha256 berkas + angka utama -> manifest.json
+src/uji_ambang.py       grid ambang kategori 3 tingkat + uji bersarang -> uji_ambang.json
 outputs/model/model_bag.joblib     artefak siap pakai: bag 6 model (6 MB)
 outputs/model/cv.json   hasil CV populasi 306: MAE+CI95, R², akurasi kategori + QWK, per bin,
                         tabel silang + rincian per kategori
@@ -128,6 +135,7 @@ outputs/model/per_bin.csv
 outputs/model/produksi.json        spesifikasi artefak produksi + ambang kategori
 outputs/model/perbandingan_regresi.json   16 varian regresi 9 faktor + baris yang dipakai
 outputs/model/manifest.json        sha256 tiap berkas + angka utama (deterministik)
+outputs/model/uji_ambang.json      grid ambang kategori, uji bersarang, pembanding 4 tingkat
 data/split_v1.json      sidik jari pembagian data (sha 1d5f63efb7d61488), bukan dasar penilaian
 docs/codebook.md        definisi variabel, aturan pembersihan, asumsi yang perlu dikonfirmasi
 docs/Laporan-Model-Kecemasan-Remaja.docx   laporan teknis (15 halaman) untuk pembaca non-teknis
@@ -157,6 +165,7 @@ python src/train.py --mode predict --input siswa_baru.csv   # skor + label + ala
 python src/bandingkan_regresi.py         # regresi 9 faktor, protokol sama -> JSON
 python src/buat_manifest.py              # sha256 + angka utama -> manifest.json
 python src/buat_manifest.py --check      # cocokkan berkas dengan manifest tersimpan
+python src/uji_ambang.py                 # grid ambang 3 kategori + uji bersarang (privat)
 ```
 
 `--mode predict` membutuhkan CSV/parquet dengan 76 kolom input model (72 numerik + 4
@@ -173,7 +182,8 @@ siswa.
 
 ## Peta verifikasi
 
-Setiap angka yang dilaporkan bisa ditelusuri ke satu berkas. "Privat" = butuh data mentah yang
+Setiap angka yang dilaporkan bisa ditelusuri ke satu berkas, kecuali yang ditandai "di luar
+repo" (uji bersarang pemilihan bag: 0,2454 vs 0,2485). "Privat" = butuh data mentah yang
 tidak ikut repo.
 
 | Klaim | Bukti | Cara periksa |
@@ -185,10 +195,11 @@ tidak ikut repo.
 | Berkas split tidak berubah | `data/split_v1.json` + `SHA_V1` di `train.py` | `--mode check-split` (privat) |
 | 6 model produksi #8/#11/#17/#20/#24/#26 | `produksi.json → pemilihan_model`, `train.py → PEMILIHAN_BAG` | baca dua berkas |
 | Regresi 9 faktor: MAE CV 0,2469, R² 0,534 | `outputs/model/perbandingan_regresi.json` | `python src/bandingkan_regresi.py` (privat) |
+| Ambang 1,70/2,20: QWK 0,734, akurasi 69,3%; uji bersarang QWK 0,689, akurasi 66,0% | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
 | Angka ↔ berkas yang menghasilkannya | `outputs/model/manifest.json` | `python src/buat_manifest.py --check` |
 
 Tanpa data mentah, yang bisa diperiksa langsung dari hasil clone: seluruh angka di `cv.json`,
-`produksi.json`, `perbandingan_regresi.json`, `manifest.json`, plus `--mode
+`produksi.json`, `perbandingan_regresi.json`, `uji_ambang.json`, `manifest.json`, plus `--mode
 self-test` dan `--mode predict` pada CSV sendiri. Yang tidak bisa: menghitung ulang angkanya.
 
 ## Catatan pembacaan

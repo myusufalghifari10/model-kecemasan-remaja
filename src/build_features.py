@@ -12,9 +12,10 @@ Alur (semua aturan di `docs/codebook.md`, bagian "Aturan Cleaning"):
 7. `y_biner` = 1 bila `y_kontinu` >= 2.5 (43 siswa).
 
 Keluaran: parquet berisi `row_id` (0..305), 76 kolom masukan model, dan dua kolom
-target. `w_style` / `longstring_max` / `flag_straightliner` dari berkas lama TIDAK
-dibangun lagi: ketiganya tidak dipakai model, dan aturan pembuatannya tidak
-terdokumentasi di repo mana pun.
+target (79 kolom). Berkas `data/features.parquet` yang dipakai model memuat 3 kolom
+diagnostik lama di atasnya (`w_style`, `longstring_max`, `flag_straightliner`) sehingga
+berjumlah 82 kolom; ketiganya tidak dipakai model dan tidak dibangun ulang di sini,
+karena aturan pembuatannya tidak terdokumentasi di repo mana pun.
 
 Pakai:
   python src/build_features.py                      # tulis data/features.parquet

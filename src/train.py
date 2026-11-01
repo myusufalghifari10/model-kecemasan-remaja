@@ -66,7 +66,8 @@ N_FOLD = N_SPLITS * N_REPEATS
 N_BOOT = 2000
 N_POP = 306
 # Enam model untuk inference, dipilih dengan kriteria OUT-OF-FOLD: setiap model hanya
-# dinilai pada 61 siswa yang tidak dilihatnya, lalu MAE itu dibagi rata-rata MAE ulangannya
+# dinilai pada 61-62 siswa yang tidak dilihatnya (lipatan validasi berukuran 61 atau 62),
+# lalu MAE itu dibagi rata-rata MAE ulangannya
 # (koreksi tingkat kesulitan lipatan). Kriteria ini tidak memakai skor pada 306 siswa yang
 # menjadi data latih model, jadi bukan pemilihan berdasarkan hafalan.
 #   6 teratas: #8, #11, #17, #20, #24, #26  -> indeks 0-based di bawah
@@ -626,7 +627,7 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
     if x.shape != x_cek.shape or not np.allclose(x, x_cek):
         _fail("preprocessor tersimpan tidak identik dengan _encode — jangan lanjut")
 
-    # BAG: 6 model dari 6 lipatan berbeda, masing-masing dilatih pada 244 dari 306 siswa
+    # BAG: 6 model dari 6 lipatan berbeda, masing-masing dilatih pada 244 atau 245 dari 306
     # (4/5), lalu prediksi dirata-ratakan. Komposisinya ada di PEMILIHAN_BAG: repeat
     # 1,2,3,3,4,5 (dua model dari repeat 3), jadi BUKAN satu model per repeat.
     folds = _daftar_fold(df, SEED)
@@ -667,7 +668,7 @@ def run_final(df: pd.DataFrame, force: bool = False) -> None:
         "pemilihan_model": {
             "indeks_0based": list(PEMILIHAN_BAG),
             "nomor_1based": [i + 1 for i in PEMILIHAN_BAG],
-            "kriteria": ("MAE out-of-fold tiap model (61 siswa yang tidak dilihatnya) "
+            "kriteria": ("MAE out-of-fold tiap model (61-62 siswa yang tidak dilihatnya) "
                          "dibagi rata-rata MAE ulangannya untuk koreksi kesulitan lipatan"),
             "catatan": ("kriteria tidak memakai skor pada 306 siswa; keuntungan pemilihan "
                         "semacam ini terukur ~0,003 MAE pada uji bersarang"),

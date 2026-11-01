@@ -1,6 +1,6 @@
 {
   "versi": "produksi_v1",
-  "dibuat": "2026-10-29T01:00:30",
+  "dibuat": "2026-11-02T03:07:36",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -36,7 +36,7 @@
       24,
       26
     ],
-    "kriteria": "MAE out-of-fold tiap model (61 siswa yang tidak dilihatnya) dibagi rata-rata MAE ulangannya untuk koreksi kesulitan lipatan",
+    "kriteria": "MAE out-of-fold tiap model (61-62 siswa yang tidak dilihatnya) dibagi rata-rata MAE ulangannya untuk koreksi kesulitan lipatan",
     "catatan": "kriteria tidak memakai skor pada 306 siswa; keuntungan pemilihan semacam ini terukur ~0,003 MAE pada uji bersarang"
   },
   "n_baris": 306,
