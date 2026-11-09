@@ -85,6 +85,8 @@ def main() -> int:
     bag = oof.mean(axis=0)
     kal = LinearRegression().fit(bag.reshape(-1, 1), y)
     hasil["per_ulangan"] = per
+    # pembanding sederhana: tebak rata-rata
+    hasil["tebak_rata2"] = {"mae": round(mae(y, np.full_like(y, y.mean())), 4)}
     hasil["bag"] = {
         "mae": round(mae(y, bag), 4),
         "rmse": round(float(np.sqrt(((y - bag) ** 2).mean())), 4),
@@ -98,6 +100,22 @@ def main() -> int:
         "mae_setelah_kalibrasi": round(mae(y, kal.predict(bag.reshape(-1, 1))), 4),
         "n_tepat_di_batas_1_70": int((y == 1.70).sum()),
         "n_tepat_di_batas_2_20": int((y == 2.20).sum()),
+    }
+
+    # 2b. sensitivitas duplikat: dua baris identik (row_id 53 dan 55) dibuang dari penilaian
+    kembar = [53, 55]
+    sisa = np.setdiff1d(np.arange(len(y)), kembar)
+    terpisah = 0
+    for tr, va in M._daftar_fold(df, C.RANDOM_SEED):
+        if set(kembar) & set(tr.tolist()) and set(kembar) & set(va.tolist()):
+            terpisah += 1
+    hasil["duplikat"] = {
+        "row_id": kembar,
+        "n_lipatan_kembar_terpisah": int(terpisah),
+        "n_lipatan": int(len(M._daftar_fold(df, C.RANDOM_SEED))),
+        "mae_tanpa_duplikat": round(mae(y[sisa], bag[sisa]), 4),
+        "mae_dengan_duplikat": round(mae(y, bag), 4),
+        "selisih": round(mae(y, bag) - mae(y[sisa], bag[sisa]), 4),
     }
 
     # 3. bootstrap MAE/QWK/akurasi
@@ -187,6 +205,8 @@ def main() -> int:
     print(f"  bag             : MAE {hasil['bag']['mae']} | RMSE {hasil['bag']['rmse']} | "
           f"QWK {hasil['bag']['qwk']}")
     print(f"  CI QWK          : {hasil['bootstrap_2000_ci95']['qwk']}")
+    print(f"  tebak rata-rata : MAE {hasil['tebak_rata2']['mae']}")
+    print(f"  duplikat        : {hasil['duplikat']}")
     print(f"  varian SOSIAL3  : {varian}")
     print(f"  regresi         : F({k},{n-k-1}) {hasil['regresi']['F']} | adj R2 "
           f"{hasil['regresi']['r2_adjusted']} | VIF maks {max(vif.values())}")

@@ -27,6 +27,9 @@
       "qwk": 0.7389
     }
   ],
+  "tebak_rata2": {
+    "mae": 0.3787
+  },
   "bag": {
     "mae": 0.2165,
     "rmse": 0.2835,
@@ -40,6 +43,17 @@
     "mae_setelah_kalibrasi": 0.2156,
     "n_tepat_di_batas_1_70": 12,
     "n_tepat_di_batas_2_20": 12
+  },
+  "duplikat": {
+    "row_id": [
+      53,
+      55
+    ],
+    "n_lipatan_kembar_terpisah": 10,
+    "n_lipatan": 30,
+    "mae_tanpa_duplikat": 0.2179,
+    "mae_dengan_duplikat": 0.2165,
+    "selisih": -0.0013
   },
   "bootstrap_2000_ci95": {
     "mae": [
