@@ -302,9 +302,10 @@ def _transform(pre: dict, df: pd.DataFrame) -> np.ndarray:
 
 # ---------------------------------------------------------------- parameter & fold
 
-# Sembilan hyperparameter XGB, ditetapkan lewat pencarian hyperparameter terpisah yang
-# memakai lipatan CV pada data latih saja — tidak pernah dari data uji. Disimpan sebagai
-# litera supaya berkas ini mandiri dan angkanya tidak bergeser tanpa ketahuan.
+# Sembilan hyperparameter XGB, ditetapkan lewat pencarian terpisah yang skripnya tidak
+# disertakan. Pada data ini pemilihan itu memakai siswa yang sama dengan evaluasi, jadi
+# angkanya mengandung optimisme pemilihan yang belum diukur. Disimpan sebagai litera
+# supaya berkas ini mandiri dan angkanya tidak bergeser tanpa ketahuan.
 PARAM_MEDIAN = {
     "n_estimators": 1282,
     "max_depth": 6,

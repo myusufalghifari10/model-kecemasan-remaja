@@ -132,8 +132,8 @@ src/build_features.py   data mentah .sav -> matriks fitur (tahap 1, aturan clean
 src/bandingkan_regresi.py     regresi 9 faktor di protokol yang sama
 src/buat_manifest.py    sha256 berkas + angka utama -> manifest.json
 src/uji_ambang.py       grid ambang kategori 3 tingkat + uji bersarang -> uji_ambang.json
-src/uji_tambahan.py     MAE per ulangan, kalibrasi, bootstrap, varian SOSIAL3, F/adj.R2/VIF
-                        -> uji_tambahan.json
+src/uji_tambahan.py     MAE per ulangan, kalibrasi, bootstrap, varian SOSIAL3, tebak
+                        rata-rata, sensitivitas duplikat, F/adj.R2/VIF -> uji_tambahan.json
 outputs/model/model_bag.joblib     artefak siap pakai: bag 6 model (6 MB)
 outputs/model/cv.json   hasil CV populasi 306: MAE+CI95, R², akurasi kategori + QWK, per bin,
                         tabel silang + rincian per kategori
@@ -143,10 +143,11 @@ outputs/model/perbandingan_regresi.json   16 varian regresi 9 faktor + baris yan
 outputs/model/manifest.json        sha256 tiap berkas + angka utama (deterministik)
 outputs/model/uji_ambang.json      grid ambang kategori, uji bersarang, pembanding 4 tingkat
 outputs/model/uji_tambahan.json    angka pendukung laporan: per ulangan, bootstrap, varian
-                                   SOSIAL3, statistik regresi (F, adj. R2, VIF)
+                                   SOSIAL3, tebak rata-rata, sensitivitas duplikat,
+                                   statistik regresi (F, adj. R2, VIF)
 data/split_v1.json      sidik jari pembagian data (sha 1d5f63efb7d61488), bukan dasar penilaian
 docs/codebook.md        definisi variabel, aturan pembersihan, asumsi yang perlu dikonfirmasi
-docs/Laporan-Model-Kecemasan-Remaja.docx   laporan teknis (17 halaman) untuk pembaca non-teknis
+docs/Laporan-Model-Kecemasan-Remaja.docx   laporan teknis (19 halaman) untuk pembaca non-teknis
 requirements.txt        versi paket dipatok (termasuk pyreadstat untuk membaca .sav)
 ```
 

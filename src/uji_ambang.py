@@ -194,6 +194,7 @@ def main() -> int:
         "gabungan_306": gabung,
         "acuan_model_tunggal_ambang_tetap": tunggal_tetap,
         "ambang_tersering": [[list(kk), v] for kk, v in tersering.most_common(3)],
+        "ambang_terpilih_per_lipatan": [[float(x), float(y)] for x, y in pilihan],
     }
     print(f"\n[uji_ambang] uji bersarang penuh ({len(acc_lipat)} lipatan x "
           f"{a.inner_folds} lipatan dalam):")
