@@ -25,7 +25,9 @@ Pakai:
 from __future__ import annotations
 
 import argparse
+import pathlib
 import sys
+import tempfile
 
 import numpy as np
 import pandas as pd
@@ -147,6 +149,13 @@ def _fail(pesan: str) -> None:
     raise SystemExit(1)
 
 
+def _cetak_ringkas(df: pd.DataFrame, tujuan: str) -> None:
+    print(f"[build_features] {df.shape[0]} baris x {df.shape[1]} kolom -> {tujuan}")
+    print(f"[build_features] y_kontinu {df[C.TARGET_CONT].min():.2f}-{df[C.TARGET_CONT].max():.2f} "
+          f"(rata-rata {df[C.TARGET_CONT].mean():.3f}, SD {df[C.TARGET_CONT].std(ddof=1):.3f}) | "
+          f"y_biner positif {int(df['y_biner'].sum())}")
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Bangun matriks fitur dari data mentah SPSS.")
     p.add_argument("--output", default=str(C.DATA_FEATURES))
@@ -157,13 +166,16 @@ def main() -> int:
     raw = muat_mentah()
     df = bangun(raw)
     tujuan = a.output
-    df.to_parquet(tujuan, index=False)
-    print(f"[build_features] {df.shape[0]} baris x {df.shape[1]} kolom -> {tujuan}")
-    print(f"[build_features] y_kontinu {df[C.TARGET_CONT].min():.2f}-{df[C.TARGET_CONT].max():.2f} "
-          f"(rata-rata {df[C.TARGET_CONT].mean():.3f}, SD {df[C.TARGET_CONT].std(ddof=1):.3f}) | "
-          f"y_biner positif {int(df['y_biner'].sum())}")
     if a.check:
-        return periksa(tujuan)
+        # Mode --check tidak boleh menulis ke berkas tujuan: hasil ditulis ke berkas
+        # sementara lalu dibandingkan, sehingga matriks fitur yang dipakai model utuh.
+        with tempfile.TemporaryDirectory() as td:
+            sementara = str(pathlib.Path(td) / "hasil.parquet")
+            df.to_parquet(sementara, index=False)
+            _cetak_ringkas(df, "berkas sementara (mode --check, tujuan tidak disentuh)")
+            return periksa(sementara)
+    df.to_parquet(tujuan, index=False)
+    _cetak_ringkas(df, tujuan)
     return 0
 
 
