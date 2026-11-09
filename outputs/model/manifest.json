@@ -47,28 +47,32 @@
       "byte": 7664
     },
     "src/buat_manifest.py": {
-      "sha256": "a7a2b397c89d18c42d4f6068033cda2ceff2681583ac2517031867073a4bda0e",
-      "byte": 5294
+      "sha256": "7e50ed2640ac0c322cc5500282ec57e68d2dc53634225aab872a826febf68f75",
+      "byte": 5360
     },
     "src/uji_ambang.py": {
       "sha256": "93369abc6d78d9011e7d9d0e432b8b23ac5ed5b6231cefe061116c39aceb0ed8",
       "byte": 11643
+    },
+    "src/uji_tambahan.py": {
+      "sha256": "3a0564ba3c2738b44611ea5609a2641a57fdfb29cbb561a81b71f8505342a1d9",
+      "byte": 8907
     },
     "requirements.txt": {
       "sha256": "b37165828f32dc8e43082f9dcec6c35e0804473d875f28c560d99ff7c0c910ef",
       "byte": 203
     },
     "README.md": {
-      "sha256": "a8b677532e8ff57f94f920c5b962da6c3a168a5140dcc2922f4cc646e4ea30c3",
-      "byte": 13800
+      "sha256": "1ef05cc8fbd4c1df4a80b658c12f699aac7a54155c5e85030769549f0de6994d",
+      "byte": 14453
     },
     "docs/codebook.md": {
       "sha256": "1b488e13093aa429334c765ddbf53d6c5cc813d19c34ac4e00b67643820474d4",
       "byte": 11432
     },
     "docs/Laporan-Model-Kecemasan-Remaja.docx": {
-      "sha256": "46932a861391ec640ab308d07b766d9f768820dbaaf9beea35e021b910cb7c73",
-      "byte": 26145
+      "sha256": "833ae35bf4340881e7a0791a7a1fee5982b40a894ce3b1b2c9d61a52816188a5",
+      "byte": 29603
     },
     "data/split_v1.json": {
       "sha256": "8baec652ae3c0db30d694b6a67597dc725711593bd404e18b0c01d06fd3910a6",
@@ -93,6 +97,10 @@
     "outputs/model/uji_ambang.json": {
       "sha256": "5d0eac98debf6372ffe6cdc80dc3c0a602406f6e8fde4a33301880c4ef33a3ae",
       "byte": 5120
+    },
+    "outputs/model/uji_tambahan.json": {
+      "sha256": "ccd2dc93a94f33b99da6e903de852b5b4f132f74c742dd38e10000ab50dec2ff",
+      "byte": 1840
     },
     "outputs/model/model_bag.joblib": {
       "sha256": "8505f91dc55b71d91189559f46cadf533232c423a373945b64b89a865994fb90",

@@ -24,13 +24,15 @@ import config as C
 
 PUBLIK = [
     "src/train.py", "src/config.py", "src/build_features.py", "src/bandingkan_regresi.py",
-    "src/buat_manifest.py", "src/uji_ambang.py", "requirements.txt", "README.md",
+    "src/buat_manifest.py", "src/uji_ambang.py", "src/uji_tambahan.py",
+    "requirements.txt", "README.md",
     "docs/codebook.md",
     "docs/Laporan-Model-Kecemasan-Remaja.docx",
     "data/split_v1.json",
     "outputs/model/cv.json", "outputs/model/per_bin.csv",
     "outputs/model/produksi.json",
     "outputs/model/perbandingan_regresi.json", "outputs/model/uji_ambang.json",
+    "outputs/model/uji_tambahan.json",
     "outputs/model/model_bag.joblib",
 ]
 PRIVAT = ["data/features.parquet", "outputs/model/oof.csv", "data/raw/INPUT DATA  (1).sav"]

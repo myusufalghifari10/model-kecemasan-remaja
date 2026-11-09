@@ -1,0 +1,104 @@
+{
+  "seed": 42,
+  "n": 306,
+  "per_ulangan": [
+    {
+      "mae": 0.2273,
+      "qwk": 0.7079
+    },
+    {
+      "mae": 0.2203,
+      "qwk": 0.7255
+    },
+    {
+      "mae": 0.2242,
+      "qwk": 0.7173
+    },
+    {
+      "mae": 0.2183,
+      "qwk": 0.7239
+    },
+    {
+      "mae": 0.2158,
+      "qwk": 0.7294
+    },
+    {
+      "mae": 0.2165,
+      "qwk": 0.7389
+    }
+  ],
+  "bag": {
+    "mae": 0.2165,
+    "rmse": 0.2835,
+    "r2": 0.6305,
+    "qwk": 0.7342,
+    "mae_rata2_satu_model": 0.2204,
+    "mae_min_satu_model": 0.2158,
+    "mae_maks_satu_model": 0.2273,
+    "kalibrasi_slope": 0.929,
+    "kalibrasi_intercept": 0.129,
+    "mae_setelah_kalibrasi": 0.2156,
+    "n_tepat_di_batas_1_70": 12,
+    "n_tepat_di_batas_2_20": 12
+  },
+  "bootstrap_2000_ci95": {
+    "mae": [
+      0.1959,
+      0.237
+    ],
+    "qwk": [
+      0.6772,
+      0.7861
+    ],
+    "akurasi": [
+      0.6404,
+      0.7451
+    ]
+  },
+  "regresi": {
+    "r2_in_sample": 0.5658,
+    "r2_adjusted": 0.5526,
+    "F": 42.86,
+    "df": [
+      9,
+      296
+    ],
+    "p": 1.176260459988599e-48,
+    "rmse_in_sample": 0.3073,
+    "vif": {
+      "f_akademik": 1.23,
+      "f_keluarga": 1.57,
+      "f_sosial": 1.32,
+      "f_ekonomi": 1.71,
+      "f_digital": 1.67,
+      "f_masadepan": 1.52,
+      "f_coping_negatif": 1.35,
+      "f_perilaku_sehat": 1.12,
+      "f_duk_teman": 1.15
+    },
+    "cv": {
+      "mae": 0.2469,
+      "rmse": 0.3185,
+      "r2": 0.5336,
+      "selisih_mae_model_min_regresi": 0.0303,
+      "ci95_selisih_bootstrap_10000": [
+        -0.0467,
+        -0.0135
+      ]
+    }
+  },
+  "varian_sosial3": {
+    "tanpa_komposisi_f_sosial": {
+      "mae": 0.2192,
+      "qwk": 0.7302
+    },
+    "tanpa_f_sosial_dan_item": {
+      "mae": 0.2229,
+      "qwk": 0.7052
+    },
+    "tanpa_pembalikan": {
+      "mae": 0.2178,
+      "qwk": 0.7423
+    }
+  }
+}

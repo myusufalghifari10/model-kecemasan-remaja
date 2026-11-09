@@ -132,6 +132,8 @@ src/build_features.py   data mentah .sav -> matriks fitur (tahap 1, aturan clean
 src/bandingkan_regresi.py     regresi 9 faktor di protokol yang sama
 src/buat_manifest.py    sha256 berkas + angka utama -> manifest.json
 src/uji_ambang.py       grid ambang kategori 3 tingkat + uji bersarang -> uji_ambang.json
+src/uji_tambahan.py     MAE per ulangan, kalibrasi, bootstrap, varian SOSIAL3, F/adj.R2/VIF
+                        -> uji_tambahan.json
 outputs/model/model_bag.joblib     artefak siap pakai: bag 6 model (6 MB)
 outputs/model/cv.json   hasil CV populasi 306: MAE+CI95, R², akurasi kategori + QWK, per bin,
                         tabel silang + rincian per kategori
@@ -140,6 +142,8 @@ outputs/model/produksi.json        spesifikasi artefak produksi + ambang kategor
 outputs/model/perbandingan_regresi.json   16 varian regresi 9 faktor + baris yang dipakai
 outputs/model/manifest.json        sha256 tiap berkas + angka utama (deterministik)
 outputs/model/uji_ambang.json      grid ambang kategori, uji bersarang, pembanding 4 tingkat
+outputs/model/uji_tambahan.json    angka pendukung laporan: per ulangan, bootstrap, varian
+                                   SOSIAL3, statistik regresi (F, adj. R2, VIF)
 data/split_v1.json      sidik jari pembagian data (sha 1d5f63efb7d61488), bukan dasar penilaian
 docs/codebook.md        definisi variabel, aturan pembersihan, asumsi yang perlu dikonfirmasi
 docs/Laporan-Model-Kecemasan-Remaja.docx   laporan teknis (17 halaman) untuk pembaca non-teknis
@@ -170,6 +174,7 @@ python src/bandingkan_regresi.py         # regresi 9 faktor, protokol sama -> JS
 python src/buat_manifest.py              # sha256 + angka utama -> manifest.json
 python src/buat_manifest.py --check      # cocokkan berkas dengan manifest tersimpan
 python src/uji_ambang.py                 # grid ambang 3 kategori + uji bersarang (privat)
+python src/uji_tambahan.py               # angka pendukung laporan -> uji_tambahan.json (privat)
 ```
 
 `--mode predict` membutuhkan CSV/parquet dengan 76 kolom input model (72 numerik + 4
@@ -200,6 +205,7 @@ tidak ikut repo.
 | 6 model produksi #8/#11/#17/#20/#24/#26 | `produksi.json → pemilihan_model`, `train.py → PEMILIHAN_BAG` | baca dua berkas |
 | Regresi 9 faktor: MAE CV 0,2469, R² 0,534 | `outputs/model/perbandingan_regresi.json` | `python src/bandingkan_regresi.py` (privat) |
 | Ambang 1,70/2,20: QWK 0,734, akurasi 69,3%; uji bersarang penuh (satu model per lipatan): QWK gabungan 0,725, akurasi 68,3%; pembanding setara 0,739 | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
+| MAE per ulangan 0,2158-0,2273 (rata-rata 0,2204); kalibrasi 0,93; CI QWK 0,677-0,786; varian SOSIAL3 0,2178/0,2192/0,2229; F(9,296) 42,86, adj. R2 0,553, VIF 1,12-1,71 | `outputs/model/uji_tambahan.json` | `python src/uji_tambahan.py` (privat) |
 | Angka ↔ berkas yang menghasilkannya | `outputs/model/manifest.json` | `python src/buat_manifest.py --check` |
 
 Tanpa data mentah, yang bisa diperiksa langsung dari hasil clone: seluruh angka di `cv.json`,
