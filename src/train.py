@@ -97,12 +97,13 @@ PREDIKSI_CSV = OUT_DIR / "prediksi.csv"
 # Ambang dipilih dari grid 2 parameter pada prediksi out-of-fold 306 siswa, dengan
 # kriteria QWK, BUKAN akurasi: memilih demi akurasi menghasilkan skema yang menumpuk
 # hampir semua siswa di satu kelas (264 dari 306 aktual, 281 prediksi; akurasi 0,886
-# tapi QWK 0,54). Nilai terpilih berimpit dengan rata-rata sampel 1,967 dan simpangan
-# baku 0,467, yaitu kira-kira rata-rata -0,57 SD dan +0,50 SD. Uji bersarang penuh
+# tapi QWK 0,54). Nilai terpilih berada di sekitar rata-rata sampel 1,967 +- 0,5
+# simpangan baku 0,467 (tepatnya -0,57 SD dan +0,50 SD). Uji bersarang penuh
 # (ambang dipilih lewat CV 5 lipatan di dalam lipatan latih, model dilatih ulang)
-# memberi QWK gabungan 0,726 dan akurasi 0,683 (rata-rata per lipatan 0,679 / 0,653),
-# jadi ambang ini tidak hanya cocok di data yang dipakai memilihnya. Dihitung ulang
-# oleh src/uji_ambang.py.
+# memberi QWK gabungan 0,725 dan akurasi 0,683 (rata-rata per lipatan 0,679 / 0,653).
+# Pembanding setaranya satu model per lipatan dengan ambang tetap (0,739), bukan bag
+# enam model (0,734), karena uji bersarang juga memakai satu model per lipatan; jadi
+# harga pemilihan ambang sekitar 0,013 QWK. Dihitung ulang oleh src/uji_ambang.py.
 KATEGORI_AMBANG = (1.70, 2.20)
 KATEGORI_LABEL = ("Rendah", "Sedang", "Tinggi")
 N_PENJELASAN = 5      # jumlah fitur teratas yang dilaporkan per siswa

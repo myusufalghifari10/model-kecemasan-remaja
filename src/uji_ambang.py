@@ -172,6 +172,9 @@ def main() -> int:
         "qwk": float(cohen_kappa_score(ka, kp, weights="quadratic")),
         "aktual_dikunci_di": [1.70, 2.20],
     }
+    # acuan setara: model TUNGGAL (bukan bag) dengan ambang tetap, pada lipatan yang sama
+    tunggal_tetap = ukur(y, pred_luar, 1.70, 2.20)
+
     tersering = Counter(tuple(v) for v in pilihan)
     bersarang = {
         "n_lipatan": len(acc_lipat),
@@ -180,13 +183,16 @@ def main() -> int:
             "rata_rata_per_lipatan": ("QWK rata-rata 30 lipatan; nilai aktual di lipatan uji "
                                       "dikategorikan dengan ambang lipatan itu sendiri"),
             "gabungan_306": ("QWK satu tabel 306 siswa; kategori aktual dikunci di 1,70/2,20, "
-                             "prediksi memakai ambang lipatannya (sebanding dengan acuan)"),
+                             "prediksi memakai ambang lipatannya"),
+            "acuan_model_tunggal_ambang_tetap": ("pembanding setara: satu model per lipatan "
+                                                 "(bukan bag 6 model) dengan ambang tetap"),
         },
         "rata_rata_per_lipatan": {
             "akurasi": float(np.mean(acc_lipat)),
             "qwk": float(np.mean(qwk_lipat)),
         },
         "gabungan_306": gabung,
+        "acuan_model_tunggal_ambang_tetap": tunggal_tetap,
         "ambang_tersering": [[list(kk), v] for kk, v in tersering.most_common(3)],
     }
     print(f"\n[uji_ambang] uji bersarang penuh ({len(acc_lipat)} lipatan x "
@@ -197,7 +203,9 @@ def main() -> int:
     print(f"  gabungan 306          : akurasi {gabung['akurasi']:.4f} | "
           f"QWK {gabung['qwk']:.4f} (aktual dikunci 1,70/2,20)")
     print(f"  acuan ambang tetap    : akurasi {acuan['akurasi']:.4f} | "
-          f"QWK {acuan['qwk']:.4f}")
+          f"QWK {acuan['qwk']:.4f} (bag 6 model)")
+    print(f"  acuan model tunggal   : akurasi {tunggal_tetap['akurasi']:.4f} | "
+          f"QWK {tunggal_tetap['qwk']:.4f} (satu model per lipatan, ambang tetap)")
 
     # --- pembanding: skema empat tingkat lama
     t = [1.75, 2.50, 3.25]

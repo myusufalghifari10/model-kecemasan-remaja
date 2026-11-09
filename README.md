@@ -92,8 +92,11 @@ Skema kategori: tiga tingkat, dua ambang.
 > prediksi menunjuk ke kelas itu) dengan akurasi 88,6% tetapi QWK 0,54. Keduanya
 > kira-kira rata-rata sampel (1,967) dikurangi 0,57 dan ditambah 0,50 simpangan baku (0,467).
 > Uji bersarang, yaitu ambang dipilih di lipatan latih lalu dinilai di lipatan uji selama 30
-> lipatan, memberi **QWK gabungan 0,726 dan akurasi 68,3%** (rata-rata per lipatan 0,679 dan
-> 65,3%), jadi keunggulannya tidak hanya muncul di data yang dipakai memilih. Kedua angka itu dihitung ulang oleh `python src/uji_ambang.py`.
+> lipatan, memberi **QWK gabungan 0,725 dan akurasi 68,3%** (rata-rata per lipatan 0,679 dan
+> 65,3%). Pembanding setaranya bukan gabungan enam model (0,734), melainkan satu model per
+> lipatan dengan ambang tetap pada lipatan yang sama (0,739), karena uji bersarang juga memakai
+> satu model per lipatan. Selisih 0,013 adalah harga pemilihan ambang yang tidak melihat siswa
+> uji. Kedua angka itu dihitung ulang oleh `python src/uji_ambang.py`.
 > Skema empat tingkat 115/153/35/3 dari dokumen analisis sebelumnya tetap dicatat sebagai
 > pembanding, tetapi tidak dipakai: kelas teratasnya hanya 3 siswa dan tidak dapat
 > dipelajari (recall 1 dari 3).
@@ -196,7 +199,7 @@ tidak ikut repo.
 | Berkas split tidak berubah | `data/split_v1.json` + `SHA_V1` di `train.py` | `--mode check-split` (privat) |
 | 6 model produksi #8/#11/#17/#20/#24/#26 | `produksi.json → pemilihan_model`, `train.py → PEMILIHAN_BAG` | baca dua berkas |
 | Regresi 9 faktor: MAE CV 0,2469, R² 0,534 | `outputs/model/perbandingan_regresi.json` | `python src/bandingkan_regresi.py` (privat) |
-| Ambang 1,70/2,20: QWK 0,734, akurasi 69,3%; uji bersarang penuh: QWK gabungan 0,726, akurasi 68,3% | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
+| Ambang 1,70/2,20: QWK 0,734, akurasi 69,3%; uji bersarang penuh (satu model per lipatan): QWK gabungan 0,725, akurasi 68,3%; pembanding setara 0,739 | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
 | Angka ↔ berkas yang menghasilkannya | `outputs/model/manifest.json` | `python src/buat_manifest.py --check` |
 
 Tanpa data mentah, yang bisa diperiksa langsung dari hasil clone: seluruh angka di `cv.json`,
