@@ -133,7 +133,8 @@ src/bandingkan_regresi.py     regresi 9 faktor di protokol yang sama
 src/buat_manifest.py    sha256 berkas + angka utama -> manifest.json
 src/uji_ambang.py       grid ambang kategori 3 tingkat + uji bersarang -> uji_ambang.json
 src/uji_tambahan.py     MAE per ulangan, kalibrasi, bootstrap, varian SOSIAL3, tebak
-                        rata-rata, sensitivitas duplikat, F/adj.R2/VIF -> uji_tambahan.json
+                        rata-rata, sensitivitas duplikat dan status orang tua, F/adj.R2/VIF
+                        -> uji_tambahan.json
 outputs/model/model_bag.joblib     artefak siap pakai: bag 6 model (6 MB)
 outputs/model/cv.json   hasil CV populasi 306: MAE+CI95, R², akurasi kategori + QWK, per bin,
                         tabel silang + rincian per kategori
@@ -143,7 +144,7 @@ outputs/model/perbandingan_regresi.json   16 varian regresi 9 faktor + baris yan
 outputs/model/manifest.json        sha256 tiap berkas + angka utama (deterministik)
 outputs/model/uji_ambang.json      grid ambang kategori, uji bersarang, pembanding 4 tingkat
 outputs/model/uji_tambahan.json    angka pendukung laporan: per ulangan, bootstrap, varian
-                                   SOSIAL3, tebak rata-rata, sensitivitas duplikat,
+                                   SOSIAL3, tebak rata-rata, sensitivitas duplikat dan status orang tua,
                                    statistik regresi (F, adj. R2, VIF)
 data/split_v1.json      sidik jari pembagian data (sha 1d5f63efb7d61488), bukan dasar penilaian
 docs/codebook.md        definisi variabel, aturan pembersihan, asumsi yang perlu dikonfirmasi

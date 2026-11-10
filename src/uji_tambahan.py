@@ -54,9 +54,11 @@ def cv_prediksi(df: pd.DataFrame, y: np.ndarray, params: dict, seed: int,
     """
     pakai = df.drop(columns=buang) if buang else df
     asli_num, asli_item = list(C.NUMERIC_FEATURES), list(M.ITEM_COLS)
+    asli_kat = list(C.CATEGORICAL_FEATURES)
     if buang:
         C.NUMERIC_FEATURES = [c for c in asli_num if c not in buang]
         M.ITEM_COLS = [c for c in asli_item if c not in buang]
+        C.CATEGORICAL_FEATURES = [c for c in asli_kat if c not in buang]
     try:
         folds = M._daftar_fold(df, seed)
         oof = np.full((M.N_REPEATS, len(df)), np.nan)
@@ -65,6 +67,7 @@ def cv_prediksi(df: pd.DataFrame, y: np.ndarray, params: dict, seed: int,
             oof[k // M.N_SPLITS, va] = M.latih_pred(params, xt, y[tr], M.bobot(y[tr]), xv)
     finally:
         C.NUMERIC_FEATURES, M.ITEM_COLS = asli_num, asli_item
+        C.CATEGORICAL_FEATURES = asli_kat
     return oof
 
 
@@ -198,6 +201,27 @@ def main() -> int:
                                                                        weights="quadratic")), 4)}
     hasil["varian_sosial3"] = varian
 
+    # 6. sensitivitas label status orang tua: keluarkan variabelnya dari model
+    p_tanpa = cv_prediksi(df, y, params, C.RANDOM_SEED, buang=["d_status_ortu"]).mean(axis=0)
+    hasil["varian_orangtua"] = {
+        "tanpa_d_status_ortu": {
+            "mae": round(mae(y, p_tanpa), 4),
+            "r2": round(float(1 - ((y - p_tanpa) ** 2).sum() / ((y - y.mean()) ** 2).sum()), 4),
+            "qwk": round(float(cohen_kappa_score(kategori(y), kategori(p_tanpa),
+                                                 weights="quadratic")), 4),
+            "akurasi": round(float((kategori(y) == kategori(p_tanpa)).mean()), 4),
+        },
+        "dengan_d_status_ortu": {
+            "mae": round(mae(y, bag), 4),
+            "r2": round(float(1 - ((y - bag) ** 2).sum() / ((y - y.mean()) ** 2).sum()), 4),
+            "qwk": round(float(cohen_kappa_score(kategori(y), kategori(bag),
+                                                 weights="quadratic")), 4),
+            "akurasi": round(float((kategori(y) == kategori(bag)).mean()), 4),
+        },
+        "catatan": "Tanpa variabel status orang tua, seluruh siswa tetap diikutkan; "
+                   "hanya empat kolom dummy-nya yang dikeluarkan dari fitur.",
+    }
+
     TUJUAN.parent.mkdir(parents=True, exist_ok=True)
     TUJUAN.write_text(json.dumps(hasil, indent=2, ensure_ascii=False) + "\n")
     print(f"[uji_tambahan] ditulis ke {TUJUAN}")
@@ -208,6 +232,7 @@ def main() -> int:
     print(f"  tebak rata-rata : MAE {hasil['tebak_rata2']['mae']}")
     print(f"  duplikat        : {hasil['duplikat']}")
     print(f"  varian SOSIAL3  : {varian}")
+    print(f"  varian orangtua : {hasil['varian_orangtua']['tanpa_d_status_ortu']}")
     print(f"  regresi         : F({k},{n-k-1}) {hasil['regresi']['F']} | adj R2 "
           f"{hasil['regresi']['r2_adjusted']} | VIF maks {max(vif.values())}")
     return 0

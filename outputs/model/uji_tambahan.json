@@ -114,5 +114,20 @@
       "mae": 0.2178,
       "qwk": 0.7423
     }
+  },
+  "varian_orangtua": {
+    "tanpa_d_status_ortu": {
+      "mae": 0.2162,
+      "r2": 0.6295,
+      "qwk": 0.7336,
+      "akurasi": 0.6895
+    },
+    "dengan_d_status_ortu": {
+      "mae": 0.2165,
+      "r2": 0.6305,
+      "qwk": 0.7342,
+      "akurasi": 0.6928
+    },
+    "catatan": "Tanpa variabel status orang tua, seluruh siswa tetap diikutkan; hanya empat kolom dummy-nya yang dikeluarkan dari fitur."
   }
 }
