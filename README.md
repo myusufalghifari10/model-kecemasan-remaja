@@ -7,6 +7,15 @@ item kecemasan (skala 1–4).
 
 Data: 306 siswa, survei cross-sectional. Lihat `docs/codebook.md`.
 
+## Ruang lingkup
+
+Dokumen ini **laporan teknis pembangunan model**, bukan naskah publikasi. Data yang dipakai
+adalah data sekunder yang diberikan peneliti, sehingga pemilihan instrumen, prosedur
+sampling, izin, dan persetujuan responden berada di luar cakupan dokumen ini dan dilaporkan
+pada naskah penelitian. Dokumen analisis sebelumnya yang dibandingkan di §1.1 dan §5 juga
+materi peneliti yang tidak diterbitkan; angka yang dikutip darinya dicatat di
+`outputs/model/perbandingan_regresi.json`.
+
 ## Model
 
 Dua tahap, keduanya dilatih **di dalam lipatan** pada data latih lipatan saja:
@@ -142,7 +151,7 @@ outputs/model/uji_tambahan.json    angka pendukung laporan: per ulangan, bootstr
                                    statistik regresi (F, adj. R2, VIF)
 data/split_v1.json      sidik jari pembagian data (sha 1d5f63efb7d61488), bukan dasar penilaian
 docs/codebook.md        definisi variabel, aturan pembersihan, asumsi yang perlu dikonfirmasi
-docs/Laporan-Model-Kecemasan-Remaja.docx   laporan teknis (19 halaman) untuk pembaca non-teknis
+docs/Laporan-Model-Kecemasan-Remaja.docx   laporan teknis (20 halaman) untuk pembaca non-teknis
 requirements.txt        versi paket dipatok (termasuk pyreadstat untuk membaca .sav)
 ```
 
