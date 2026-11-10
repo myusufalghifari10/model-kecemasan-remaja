@@ -114,7 +114,10 @@ def skor_faktor(item: pd.DataFrame) -> pd.DataFrame:
 def bangun(raw: pd.DataFrame) -> pd.DataFrame:
     ce = bersihkan_kecemasan(raw)
     sumber = raw[KOLOM_ITEM + KOLOM_DEMOGRAFI].copy()
-    sumber["SOSIAL3"] = 6 - sumber["SOSIAL3"]      # berkas fitur menyimpan nilai yang sudah di-reverse
+    for kol in C.REVERSE_ITEMS:
+        sumber[kol] = 6 - sumber[kol]                # berkas fitur menyimpan nilai yang sudah di-reverse
+    if C.REVERSE_ITEMS != ["SOSIAL3"]:
+        _fail("daftar REVERSE_ITEMS berubah; periksa ulang komposisi f_sosial dan berkas fitur")
     fitur = skor_faktor(sumber)
     y = ce.mean(axis=1)
     df = pd.concat([fitur, sumber[KOLOM_ITEM]], axis=1)

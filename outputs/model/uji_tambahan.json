@@ -41,8 +41,42 @@
     "kalibrasi_slope": 0.929,
     "kalibrasi_intercept": 0.129,
     "mae_setelah_kalibrasi": 0.2156,
-    "n_tepat_di_batas_1_70": 12,
-    "n_tepat_di_batas_2_20": 12
+    "n_tepat_di_batas": {
+      "1.75": 12,
+      "2.50": 5,
+      "3.25": 0
+    }
+  },
+  "sensitivitas_ambang": {
+    "definisi_positif": "skor aktual > 2.50 (38 siswa)",
+    "aturan_tanda": "nilai tepat di ambang bendera tidak ditandai (>)",
+    "n_tepat_2_20": 12,
+    "titik": [
+      {
+        "ambang_bendera": 2.2,
+        "n_tertandai": 87,
+        "sensitivitas": 0.7895,
+        "spesifisitas": 0.7873
+      },
+      {
+        "ambang_bendera": 2.3,
+        "n_tertandai": 67,
+        "sensitivitas": 0.6316,
+        "spesifisitas": 0.8396
+      },
+      {
+        "ambang_bendera": 2.4,
+        "n_tertandai": 49,
+        "sensitivitas": 0.5789,
+        "spesifisitas": 0.8993
+      },
+      {
+        "ambang_bendera": 2.5,
+        "n_tertandai": 38,
+        "sensitivitas": 0.5,
+        "spesifisitas": 0.9291
+      }
+    ]
   },
   "duplikat": {
     "row_id": [
@@ -94,25 +128,55 @@
       "mae": 0.2469,
       "rmse": 0.3185,
       "r2": 0.5336,
-      "selisih_mae_model_min_regresi": 0.0303,
-      "ci95_selisih_bootstrap_10000": [
-        -0.0467,
-        -0.0135
+      "selisih_mae_regresi_min_model": 0.0303,
+      "ci95_selisih_mae_regresi_min_model": [
+        0.0135,
+        0.0467
       ]
     }
   },
   "varian_sosial3": {
     "tanpa_komposisi_f_sosial": {
       "mae": 0.2192,
-      "qwk": 0.6367
+      "qwk": 0.6367,
+      "selisih_mae_varian_min_bag": 0.0027,
+      "ci95_selisih_mae": [
+        0.0005,
+        0.005
+      ],
+      "selisih_qwk_bag_min_varian": 0.0099,
+      "ci95_selisih_qwk": [
+        -0.0026,
+        0.0252
+      ]
     },
     "tanpa_f_sosial_dan_item": {
       "mae": 0.2229,
-      "qwk": 0.6324
+      "qwk": 0.6324,
+      "selisih_mae_varian_min_bag": 0.0063,
+      "ci95_selisih_mae": [
+        0.0006,
+        0.0118
+      ],
+      "selisih_qwk_bag_min_varian": 0.0143,
+      "ci95_selisih_qwk": [
+        -0.0116,
+        0.0425
+      ]
     },
     "tanpa_pembalikan": {
       "mae": 0.2178,
-      "qwk": 0.6384
+      "qwk": 0.6384,
+      "selisih_mae_varian_min_bag": 0.0013,
+      "ci95_selisih_mae": [
+        -0.001,
+        0.0035
+      ],
+      "selisih_qwk_bag_min_varian": 0.0082,
+      "ci95_selisih_qwk": [
+        -0.0187,
+        0.041
+      ]
     }
   },
   "varian_orangtua": {

@@ -101,7 +101,7 @@ def main() -> int:
                          for i in range(k)},
         "per_kategori": [
             {"kategori": LABEL[i], "n": int(n_aktual[i]), "recall": recall[i],
-             "bias": round(bias[i], 4),
+             "bias_prevalensi": round(bias[i], 4),
              "mae": round(float(np.abs(y[ka == i] - p[ka == i]).mean()), 4)
              if (ka == i).any() else None}
             for i in range(k)

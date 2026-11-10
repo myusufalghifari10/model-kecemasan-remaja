@@ -101,8 +101,25 @@ def main() -> int:
         "kalibrasi_slope": round(float(kal.coef_[0]), 3),
         "kalibrasi_intercept": round(float(kal.intercept_), 3),
         "mae_setelah_kalibrasi": round(mae(y, kal.predict(bag.reshape(-1, 1))), 4),
-        "n_tepat_di_batas_1_70": int((y == 1.70).sum()),
-        "n_tepat_di_batas_2_20": int((y == 2.20).sum()),
+        "n_tepat_di_batas": {"1.75": int((y == 1.75).sum()),
+                             "2.50": int((y == 2.50).sum()),
+                             "3.25": int((y == 3.25).sum())},
+    }
+
+    # 2a. sensitivitas ambang bendera pada definisi positif yang tetap
+    titik = []
+    for amb in (2.20, 2.30, 2.40, 2.50):
+        positif, bendera = y > 2.50, bag > amb
+        tp = int((positif & bendera).sum()); fp = int((~positif & bendera).sum())
+        fn = int((positif & ~bendera).sum()); tn = int((~positif & ~bendera).sum())
+        titik.append({"ambang_bendera": amb, "n_tertandai": int(bendera.sum()),
+                      "sensitivitas": round(tp / (tp + fn), 4),
+                      "spesifisitas": round(tn / (tn + fp), 4)})
+    hasil["sensitivitas_ambang"] = {
+        "definisi_positif": "skor aktual > 2.50 (38 siswa)",
+        "aturan_tanda": "nilai tepat di ambang bendera tidak ditandai (>)",
+        "n_tepat_2_20": int((y == 2.20).sum()),
+        "titik": titik,
     }
 
     # 2b. sensitivitas duplikat: dua baris identik (row_id 53 dan 55) dibuang dari penilaian
@@ -163,20 +180,20 @@ def main() -> int:
         lr_cv = LinearRegression().fit(X[tr], y[tr])
         oof_reg[kk // M.N_SPLITS, va] = lr_cv.predict(X[va])
     p_reg = oof_reg.mean(axis=0)
-    selisih = np.abs(y - bag) - np.abs(y - p_reg)
+    selisih = np.abs(y - p_reg) - np.abs(y - bag)      # regresi - model: positif = model lebih baik
     rng2 = np.random.default_rng(C.RANDOM_SEED)
     boot_sel = [float(selisih[rng2.integers(0, n, n)].mean()) for _ in range(10000)]
     hasil["regresi"]["cv"] = {
         "mae": round(mae(y, p_reg), 4),
         "rmse": round(float(np.sqrt(((y - p_reg) ** 2).mean())), 4),
         "r2": round(float(1 - ((y - p_reg) ** 2).sum() / ((y - y.mean()) ** 2).sum()), 4),
-        "selisih_mae_model_min_regresi": round(float(mae(y, p_reg) - mae(y, bag)), 4),
-        "ci95_selisih_bootstrap_10000": [round(float(np.percentile(boot_sel, 2.5)), 4),
-                                         round(float(np.percentile(boot_sel, 97.5)), 4)],
+        "selisih_mae_regresi_min_model": round(float(mae(y, p_reg) - mae(y, bag)), 4),
+        "ci95_selisih_mae_regresi_min_model": [round(float(np.percentile(boot_sel, 2.5)), 4),
+                                               round(float(np.percentile(boot_sel, 97.5)), 4)],
     }
 
     # 5. varian SOSIAL3
-    varian = {}
+    varian, pred_varian = {}, {}
     for nama, buang in [
         ("tanpa_pembalikan", None),          # ditangani khusus di bawah
         ("tanpa_komposisi_f_sosial", ["f_sosial"]),
@@ -185,6 +202,7 @@ def main() -> int:
         if nama == "tanpa_pembalikan":
             continue
         p = cv_prediksi(df, y, params, C.RANDOM_SEED, buang=buang).mean(axis=0)
+        pred_varian[nama] = p
         varian[nama] = {"mae": round(mae(y, p), 4),
                         "qwk": round(float(cohen_kappa_score(kategori(y), kategori(p),
                                                              weights="quadratic")), 4)}
@@ -196,9 +214,36 @@ def main() -> int:
     df2["SOSIAL3"] = mentah
     df2["f_sosial"] = df2[ITEM_SOSIAL].mean(axis=1)
     p = cv_prediksi(df2, y, params, C.RANDOM_SEED).mean(axis=0)
+    pred_varian["tanpa_pembalikan"] = p
     varian["tanpa_pembalikan"] = {"mae": round(mae(y, p), 4),
                                   "qwk": round(float(cohen_kappa_score(kategori(y), kategori(p),
                                                                        weights="quadratic")), 4)}
+
+    # 5b. selisih berpasangan varian vs bag (bootstrap 2000 siswa)
+    rng3 = np.random.default_rng(C.RANDOM_SEED)
+    ka, kb = kategori(y), kategori(bag)
+    qwk_bag = float(cohen_kappa_score(ka, kb, weights="quadratic"))
+    boot_mae = {k: [] for k in pred_varian}
+    boot_qwk = {k: [] for k in pred_varian}
+    for _ in range(2000):
+        ix = rng3.integers(0, n, n)
+        yb, bb = y[ix], bag[ix]
+        mae_bag = mae(yb, bb)
+        qwk_b = float(cohen_kappa_score(kategori(yb), kategori(bb), weights="quadratic"))
+        for nama, pv in pred_varian.items():
+            boot_mae[nama].append(mae(yb, pv[ix]) - mae_bag)
+            boot_qwk[nama].append(qwk_b - float(cohen_kappa_score(kategori(yb), kategori(pv[ix]),
+                                                                  weights="quadratic")))
+    for nama, pv in pred_varian.items():
+        varian[nama]["selisih_mae_varian_min_bag"] = round(float(mae(y, pv) - mae(y, bag)), 4)
+        varian[nama]["ci95_selisih_mae"] = [
+            round(float(np.percentile(boot_mae[nama], 2.5)), 4),
+            round(float(np.percentile(boot_mae[nama], 97.5)), 4)]
+        varian[nama]["selisih_qwk_bag_min_varian"] = round(
+            float(qwk_bag - cohen_kappa_score(ka, kategori(pv), weights="quadratic")), 4)
+        varian[nama]["ci95_selisih_qwk"] = [
+            round(float(np.percentile(boot_qwk[nama], 2.5)), 4),
+            round(float(np.percentile(boot_qwk[nama], 97.5)), 4)]
     hasil["varian_sosial3"] = varian
 
     # 6. sensitivitas label status orang tua: keluarkan variabelnya dari model

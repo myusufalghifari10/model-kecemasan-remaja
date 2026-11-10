@@ -62,28 +62,28 @@
       "kategori": "Rendah",
       "n": 115,
       "recall": 0.6956521739130435,
-      "bias": -0.0425,
+      "bias_prevalensi": -0.0425,
       "mae": 0.1863
     },
     {
       "kategori": "Sedang",
       "n": 153,
       "recall": 0.7320261437908496,
-      "bias": 0.0425,
+      "bias_prevalensi": 0.0425,
       "mae": 0.2061
     },
     {
       "kategori": "Tinggi",
       "n": 35,
       "recall": 0.45714285714285713,
-      "bias": 0.0065,
+      "bias_prevalensi": 0.0065,
       "mae": 0.343
     },
     {
       "kategori": "Sangat Tinggi",
       "n": 3,
       "recall": 0.3333333333333333,
-      "bias": -0.0065,
+      "bias_prevalensi": -0.0065,
       "mae": 0.4329
     }
   ],

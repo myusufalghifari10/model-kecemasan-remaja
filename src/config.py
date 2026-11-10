@@ -36,6 +36,9 @@ PERILAKU_ITEMS = [f"PERILAKU{i}" for i in range(1, 11)]
 # Dukungan lingkungan / MSPSS (skala 1-7)
 LINGKUNGAN_ITEMS = [f"LINGKUNGAN{i}" for i in range(1, 13)]
 
+# Item yang dibalik (6 - x) sebelum skor faktor dihitung.
+REVERSE_ITEMS = ["SOSIAL3"]
+
 # ---------- Target ----------
 TARGET_CONT = "y_kontinu"      # rata-rata 20 item kecemasan valid (1-4)
 

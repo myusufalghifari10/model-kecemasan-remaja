@@ -46,7 +46,7 @@ yang sama dengan protokol yang sama: MAE CV **0,2469**, R² CV **0,534** — lih
 `src/bandingkan_regresi.py` dan `outputs/model/perbandingan_regresi.json`. Varian terbaik itu
 dipilih dari 16 kandidat pada lipatan yang sama, jadi keuntungannya ada di pihak regresi.
 
-Diagnosis per bin (CV): galat terkonsentrasi di ekor. Bin 9 (n=6) MAE 0,415 dengan bias
+Diagnosis per bin (CV): error terkonsentrasi di ekor. Bin 9 (n=6) MAE 0,415 dengan bias
 +0,383; bin 8 (n=9) MAE 0,291 dengan bias +0,291. Model menaksir terlalu rendah pada siswa
 berisiko tinggi.
 
@@ -60,8 +60,9 @@ berisiko tinggi.
   dibagi rata-rata MAE ulangannya untuk meredam tingkat kesulitan lipatan. Kriteria ini
   tidak memakai skor pada 306 siswa yang menjadi data latih model, jadi bukan pemilihan
   berdasarkan hafalan. Keuntungan pemilihan semacam ini terukur **±0,003 MAE** pada uji
-  bersarang yang dijalankan di luar repo (memilih di separuh siswa buta, dinilai di separuh
-  lain: 0,2454 vs 0,2485 untuk bag kanonik, menang 383/500). Skrip uji itu tidak disertakan,
+  bersarang yang dijalankan di luar repo, yang berjalan pada level MAE sekitar 0,245–0,249
+  (memilih di separuh siswa buta, dinilai di separuh lain: 0,2454 vs 0,2485 untuk bag
+  kanonik, menang 383/500). Skrip uji itu tidak disertakan,
   jadi kedua angka tersebut tidak dapat dihitung ulang dari repo. Estimasi performa untuk
   siswa baru tetap 0,2165.
   Dua catatan jujur: (a) komposisinya bukan "satu model per ulangan" — model #8/#11/#17/
@@ -176,7 +177,7 @@ python src/uji_tambahan.py               # angka pendukung laporan -> uji_tambah
 kategorikal) memakai nama kolom yang sama seperti `data/features.parquet`; kolom `row_id`
 opsional. Keluaran default `outputs/model/prediksi.csv`.
 
-Satu berkas bisa memuat berapa pun siswa: 5.000 siswa diproses dalam ~3,4 detik (bag 6
+Satu berkas bisa memuat berapa pun siswa: 5.000 siswa diproses dalam hitungan detik (bag 6
 model + kontribusi fitur untuk semuanya). Rincian fitur di layar hanya dicetak untuk 3
 siswa pertama supaya layar tidak penuh; seluruh siswa ada di berkas CSV keluaran.
 
@@ -195,11 +196,11 @@ tidak ikut repo.
 | 306 siswa; 76 kolom input; target = rata-rata 20 item | `src/build_features.py` (privat: `features.parquet`) | `python src/build_features.py --check` |
 | MAE CV 0,2165 [0,196; 0,237]; R² 0,6305; 68,3% kategori; QWK 0,647 | `outputs/model/cv.json` | baca JSON; hitung ulang `--mode cv` (privat) |
 | MAE in-sample bag 0,1288; R² 0,8502 | `outputs/model/produksi.json` | `--mode final` (privat) |
-| Galat per bin; rincian per kategori | `outputs/model/per_bin.csv`, `cv.json → kategori` | baca berkas (privat untuk hitung ulang) |
+| Error per bin; rincian per kategori | `outputs/model/per_bin.csv`, `cv.json → kategori` | baca berkas (privat untuk hitung ulang) |
 | Berkas split tidak berubah | `data/split_v1.json` + `SHA_V1` di `train.py` | `--mode check-split` (privat) |
 | 6 model produksi #8/#11/#17/#20/#24/#26 | `produksi.json → pemilihan_model`, `train.py → PEMILIHAN_BAG` | baca dua berkas |
 | Regresi 9 faktor: MAE CV 0,2469, R² 0,534 | `outputs/model/perbandingan_regresi.json` | `python src/bandingkan_regresi.py` (privat) |
-| Ambang 1,75/2,50/3,25: QWK 0,647, akurasi 68,3%; n 115/153/35/3 sama dengan dokumen sebelumnya; ambang tetap, jadi tidak ada uji bersarang ambang | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
+| Ambang 1,75/2,50/3,25: QWK 0,647, akurasi 68,3%; n 115/153/35/3 sama dengan dokumen sebelumnya; ambang tetap, jadi tidak ada uji bersarang ambang. `bias_prevalensi` di sana adalah selisih proporsi kelas, bukan `mean(y-pred)` seperti di Tabel 7 (`cv.json`) | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
 | MAE per ulangan 0,2158-0,2273 (rata-rata 0,2204); kalibrasi 0,93; CI QWK 0,574-0,710; varian SOSIAL3 0,2178/0,2192/0,2229; F(9,296) 42,86, adj. R2 0,553, VIF 1,12-1,71 | `outputs/model/uji_tambahan.json` | `python src/uji_tambahan.py` (privat) |
 | Angka ↔ berkas yang menghasilkannya | `outputs/model/manifest.json` | `python src/buat_manifest.py --check` |
 
