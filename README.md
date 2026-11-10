@@ -27,7 +27,7 @@ Prediksi akhir = `base + XGB`.
 |---|---|
 | **MAE** | **0,2165** (CI95 0,196–0,237) |
 | **R²** | **0,6305** |
-| **akurasi kategori** | **69,3%** (QWK 0,734) |
+| **akurasi kategori** | **68,3%** (QWK 0,647) |
 
 Ketiga baris itu disimpan di `cv.json`, bersama tabel per bin (kelemahan
 di ekor), tabel silang kategori, dan rincian per kategori (n, tepat, recall, MAE, bias
@@ -75,36 +75,29 @@ berisiko tinggi.
 `--mode predict` mengeluarkan tiga hal sekaligus, tanpa opsi tambahan:
 
 1. **skor** — taksiran skor kecemasan (skala 1–4), rata-rata bag 6 model;
-2. **kategori** — Rendah / Sedang / Tinggi;
+2. **kategori** — Rendah / Sedang / Tinggi / Sangat Tinggi;
 3. **fitur_1..n + kontribusi_1..n** — fitur yang paling mendorong skor itu (default 5).
 
-Skema kategori: tiga tingkat, dua ambang.
+Skema kategori: empat tingkat, tiga ambang, sama dengan dokumen analisis sebelumnya.
 
 | kategori | batas | n |
 |---|---|---|
-| Rendah | ≤ 1,70 | 103 |
-| Sedang | 1,70 – 2,20 | 115 |
-| Tinggi | > 2,20 | 88 |
+| Rendah | ≤ 1,75 | 115 |
+| Sedang | 1,75 – 2,50 | 153 |
+| Tinggi | 2,50 – 3,25 | 35 |
+| Sangat Tinggi | > 3,25 | 3 |
 
-> Ambang 1,70 dan 2,20 dipilih dari grid dua parameter pada prediksi out-of-fold 306 siswa
-> dengan kriteria **QWK, bukan akurasi**: memilih demi akurasi menghasilkan skema yang
-> menumpuk hampir semua siswa di satu kelas (264 dari 306 siswa aktual, dan 281 dari 306
-> prediksi menunjuk ke kelas itu) dengan akurasi 88,6% tetapi QWK 0,54. Keduanya
-> kira-kira rata-rata sampel (1,967) dikurangi 0,57 dan ditambah 0,50 simpangan baku (0,467).
-> Uji bersarang, yaitu ambang dipilih di lipatan latih lalu dinilai di lipatan uji selama 30
-> lipatan, memberi **QWK gabungan 0,725 dan akurasi 68,3%** (rata-rata per lipatan 0,679 dan
-> 65,3%). Pembanding setaranya bukan gabungan enam model (0,734), melainkan satu model per
-> lipatan dengan ambang tetap pada lipatan yang sama (0,739), karena uji bersarang juga memakai
-> satu model per lipatan. Selisih 0,013 adalah harga pemilihan ambang yang tidak melihat siswa
-> uji. Kedua angka itu dihitung ulang oleh `python src/uji_ambang.py`.
-> Skema empat tingkat 115/153/35/3 dari dokumen analisis sebelumnya tetap dicatat sebagai
-> pembanding, tetapi tidak dipakai: kelas teratasnya hanya 3 siswa dan tidak dapat
-> dipelajari (recall 1 dari 3).
+> Ambang 1,75 / 2,50 / 3,25 **bukan** hasil pencarian pada data model: ketiganya
+> mereproduksi tabel kategori dokumen analisis sebelumnya secara persis (115 / 153 / 35 / 3),
+> dan kecocokan itu diperiksa `python src/uji_ambang.py`. Karena ambang tetap, angka kategori
+> tidak mengandung optimisme pemilihan ambang.
+> Harganya: kelas Sangat Tinggi hanya 3 siswa (recall 1 dari 3), kelas Tinggi 35 siswa
+> (recall 46%), dan prediksi memampat ke tengah (sebaran prediksi 102 / 166 / 37 / 1). Untuk
+> penandaan operasional dipakai batas 2,50 (38 siswa), bukan 3,25.
 
 Akurasi kategori pada CV (prediksi OOF tiap siswa dibanding kategorinya yang sebenarnya):
-**69,3% tepat**, 30,4% meleset satu tingkat, 1 siswa meleset dua tingkat, **QWK 0,734**.
-Recall tiap tingkat 68% / 67% / 74%, jauh lebih seimbang daripada skema empat tingkat
-(70% / 73% / 46% / 33%).
+**68,3% tepat**, 31,7% meleset satu tingkat, tidak ada yang meleset dua tingkat, **QWK 0,647**
+(CI95 0,574–0,710). Recall tiap tingkat 70% / 73% / 46% / 33%.
 
 ### Cara kontribusinya dihitung
 
@@ -131,7 +124,7 @@ src/config.py           nama kolom, path, seed
 src/build_features.py   data mentah .sav -> matriks fitur (tahap 1, aturan cleaning)
 src/bandingkan_regresi.py     regresi 9 faktor di protokol yang sama
 src/buat_manifest.py    sha256 berkas + angka utama -> manifest.json
-src/uji_ambang.py       grid ambang kategori 3 tingkat + uji bersarang -> uji_ambang.json
+src/uji_ambang.py       verifikasi ambang 4 tingkat + metrik kategori -> uji_ambang.json
 src/uji_tambahan.py     MAE per ulangan, kalibrasi, bootstrap, varian SOSIAL3, tebak
                         rata-rata, sensitivitas duplikat dan status orang tua, F/adj.R2/VIF
                         -> uji_tambahan.json
@@ -142,7 +135,7 @@ outputs/model/per_bin.csv
 outputs/model/produksi.json        spesifikasi artefak produksi + ambang kategori
 outputs/model/perbandingan_regresi.json   16 varian regresi 9 faktor + baris yang dipakai
 outputs/model/manifest.json        sha256 tiap berkas + angka utama (deterministik)
-outputs/model/uji_ambang.json      grid ambang kategori, uji bersarang, pembanding 4 tingkat
+outputs/model/uji_ambang.json      ambang 4 tingkat, kecocokan dengan dokumen sebelumnya, metrik kategori
 outputs/model/uji_tambahan.json    angka pendukung laporan: per ulangan, bootstrap, varian
                                    SOSIAL3, tebak rata-rata, sensitivitas duplikat dan status orang tua,
                                    statistik regresi (F, adj. R2, VIF)
@@ -175,7 +168,7 @@ python src/train.py --mode predict --input siswa_baru.csv   # skor + label + ala
 python src/bandingkan_regresi.py         # regresi 9 faktor, protokol sama -> JSON
 python src/buat_manifest.py              # sha256 + angka utama -> manifest.json
 python src/buat_manifest.py --check      # cocokkan berkas dengan manifest tersimpan
-python src/uji_ambang.py                 # grid ambang 3 kategori + uji bersarang (privat)
+python src/uji_ambang.py                 # verifikasi ambang 4 tingkat + metrik kategori (privat)
 python src/uji_tambahan.py               # angka pendukung laporan -> uji_tambahan.json (privat)
 ```
 
@@ -200,14 +193,14 @@ tidak ikut repo.
 | Klaim | Bukti | Cara periksa |
 |---|---|---|
 | 306 siswa; 76 kolom input; target = rata-rata 20 item | `src/build_features.py` (privat: `features.parquet`) | `python src/build_features.py --check` |
-| MAE CV 0,2165 [0,196; 0,237]; R² 0,6305; 69,3% kategori; QWK 0,734 | `outputs/model/cv.json` | baca JSON; hitung ulang `--mode cv` (privat) |
+| MAE CV 0,2165 [0,196; 0,237]; R² 0,6305; 68,3% kategori; QWK 0,647 | `outputs/model/cv.json` | baca JSON; hitung ulang `--mode cv` (privat) |
 | MAE in-sample bag 0,1288; R² 0,8502 | `outputs/model/produksi.json` | `--mode final` (privat) |
 | Galat per bin; rincian per kategori | `outputs/model/per_bin.csv`, `cv.json → kategori` | baca berkas (privat untuk hitung ulang) |
 | Berkas split tidak berubah | `data/split_v1.json` + `SHA_V1` di `train.py` | `--mode check-split` (privat) |
 | 6 model produksi #8/#11/#17/#20/#24/#26 | `produksi.json → pemilihan_model`, `train.py → PEMILIHAN_BAG` | baca dua berkas |
 | Regresi 9 faktor: MAE CV 0,2469, R² 0,534 | `outputs/model/perbandingan_regresi.json` | `python src/bandingkan_regresi.py` (privat) |
-| Ambang 1,70/2,20: QWK 0,734, akurasi 69,3%; uji bersarang penuh (satu model per lipatan): QWK gabungan 0,725, akurasi 68,3%; pembanding setara 0,739 | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
-| MAE per ulangan 0,2158-0,2273 (rata-rata 0,2204); kalibrasi 0,93; CI QWK 0,677-0,786; varian SOSIAL3 0,2178/0,2192/0,2229; F(9,296) 42,86, adj. R2 0,553, VIF 1,12-1,71 | `outputs/model/uji_tambahan.json` | `python src/uji_tambahan.py` (privat) |
+| Ambang 1,75/2,50/3,25: QWK 0,647, akurasi 68,3%; n 115/153/35/3 sama dengan dokumen sebelumnya; ambang tetap, jadi tidak ada uji bersarang ambang | `outputs/model/uji_ambang.json` | `python src/uji_ambang.py` (privat) |
+| MAE per ulangan 0,2158-0,2273 (rata-rata 0,2204); kalibrasi 0,93; CI QWK 0,574-0,710; varian SOSIAL3 0,2178/0,2192/0,2229; F(9,296) 42,86, adj. R2 0,553, VIF 1,12-1,71 | `outputs/model/uji_tambahan.json` | `python src/uji_tambahan.py` (privat) |
 | Angka ↔ berkas yang menghasilkannya | `outputs/model/manifest.json` | `python src/buat_manifest.py --check` |
 
 Tanpa data mentah, yang bisa diperiksa langsung dari hasil clone: seluruh angka di `cv.json`,
@@ -226,11 +219,12 @@ self-test` dan `--mode predict` pada CSV sendiri. Yang tidak bisa: menghitung ul
 - Urutan kolom pada berkas input **tidak** berpengaruh — kolom dipilih berdasarkan nama.
   Yang berpengaruh: nama kolom, skala nilai, dan level kategori. Level kategori di luar data
   latih sekarang ditolak dengan pesan, tidak lagi berubah menjadi dummy nol secara senyap.
-- Tabel per bin (lebar 0,25) dan tabel kategori (tiga tingkat) memakai batas yang tidak
-  berimpit: `1,70` sudah **Rendah** padahal masih **bin 3**, dan `2,20` sudah **Sedang**
-  padahal masih **bin 5**. Jangan membaca tabel bin sebagai tabel kategori.
+- Tabel per bin (lebar 0,25) dan tabel kategori (empat tingkat) memakai batas yang tidak
+  berimpit: `1,75` sudah **Rendah** padahal sudah masuk **bin 4**, dan `2,50` sudah **Sedang**
+  padahal sudah masuk **bin 7**. Jangan membaca tabel bin sebagai tabel kategori.
 - Bin 10 hanya 3 siswa (bin 9: 6, bin 8: 9). MAE per bin untuk bin dengan n ≤ 5 dilaporkan
   tetapi tidak boleh diranking.
 - Kategori adalah pembagian skor prediksi pada ambang tetap, bukan model klasifikasi
-  tersendiri. Ambang dipilih untuk QWK, bukan untuk keputusan penyaringan; untuk keperluan
-  triase, "Tinggi" (88 siswa, 29%) adalah penanda awal, bukan diagnosis.
+  tersendiri. Ambang ditetapkan dari dokumen sebelumnya, bukan dipilih untuk keputusan
+  penyaringan; untuk keperluan triase, batas 2,50 (38 siswa, 12,4%) adalah penanda awal,
+  bukan diagnosis.

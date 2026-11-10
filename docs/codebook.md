@@ -66,26 +66,26 @@ Urutan kolom pada matriks latih bersifat tetap; model memakai urutan itu apa ada
 - **Peringatan pada SOSIAL3 (temuan audit, perlu keputusan pembimbing).** Pembalikan `6 − x` menghasilkan `f_sosial` yang korelasinya dengan skor kecemasan **+0,381**, sedangkan versi tanpa pembalikan **+0,536**; jadi pembalikan tidak membalik arah faktor, hanya melemahkan korelasinya. Nilai mentah item itu sendiri berkorelasi **+0,209** dengan skor kecemasan, dan model memberi sumbangan lebih tinggi pada siswa yang menjawab "selalu tidak tertekan" (sumbangan +0,098 pada nilai tersimpan 1, yaitu mentah 5) daripada yang menjawab "tidak pernah tidak tertekan" (−0,018 pada nilai tersimpan 5, mentah 1). Artinya pada data ini item tersebut berperilaku seolah **tidak** perlu dibalik. Pipeline tetap mengikuti `config.REVERSE_ITEMS` agar konsisten dan dapat direproduksi, tetapi arah item ini harus diputuskan bersama pembimbing sebelum hasilnya ditafsirkan secara substantif.
 - **Sensitivitas item 12 (nilai 5).** Nilai invalid diisi median kolom; alternatif isi 4 teruji TIDAK mengubah label `y_biner` siswa mana pun.
 
-## Kategori yang Dilaporkan (3 Tingkat)
+## Kategori yang Dilaporkan (4 Tingkat)
 
-Ambang `1.70` dan `2.20` pada `y_kontinu`; keduanya kira-kira rata-rata sampel (1,967) dikurangi dan ditambah 0,5 simpangan baku (0,467).
+Ambang `1.75`, `2.50`, dan `3.25` pada `y_kontinu`. Ketiganya **bukan** hasil pencarian pada data model: ambang ini mereproduksi tabel kategori dokumen analisis sebelumnya secara persis (115 / 153 / 35 / 3), dan kecocokan itu diperiksa `python src/uji_ambang.py`.
 
 | kategori | batas | n |
 |---|---|---|
-| Rendah | ≤ 1,70 | 103 |
-| Sedang | 1,70 – 2,20 | 115 |
-| Tinggi | > 2,20 | 88 |
+| Rendah | ≤ 1,75 | 115 |
+| Sedang | 1,75 – 2,50 | 153 |
+| Tinggi | 2,50 – 3,25 | 35 |
+| Sangat Tinggi | > 3,25 | 3 |
 
-- Ambang dipilih dari grid dua parameter pada prediksi out-of-fold dengan kriteria **QWK**. Memilih ambang demi akurasi menghasilkan skema yang menumpuk hampir semua siswa di satu kelas (264 dari 306 siswa aktual, dan 281 dari 306 prediksi menunjuk ke kelas itu) dengan akurasi 88,6% tetapi QWK 0,54, jadi akurasi tidak dipakai sebagai kriteria. Kedua angka dihitung ulang oleh `python src/uji_ambang.py`.
-- Uji bersarang penuh (ambang dipilih lewat CV 5 lipatan di dalam lipatan latih, model dilatih ulang, lalu dinilai di lipatan uji, 30 lipatan): **QWK gabungan 306 siswa 0,725 dan akurasi 68,3%**; rata-rata per lipatan 0,679 dan 65,3%. Pembanding setaranya bukan 0,734 (gabungan enam model), melainkan satu model per lipatan dengan ambang tetap pada lipatan yang sama: **0,739**, karena uji bersarang juga memakai satu model per lipatan. Jadi harga pemilihan ambang yang tidak melihat siswa uji sekitar 0,013 QWK.
-  Bedanya dua estimand itu: `gabungan_306` mengunci kategori aktual di 1,70/2,20 (sebanding dengan angka 0,734), sedangkan `rata_rata_per_lipatan` mengategorikan nilai aktual di lipatan uji dengan ambang lipatan itu sendiri. Yang dibandingkan dengan 0,734 adalah angka gabungan.
-- Skema empat tingkat dokumen sebelumnya (115/153/35/3 dengan ambang 1,75/2,50/3,25) tidak dipakai: kelas teratas hanya 3 siswa dengan recall 1 dari 3 sehingga tidak dapat dipertanggungjawabkan. Angka itu tetap dicatat sebagai pembanding.
+- Karena ambang tetap, angka kategori (akurasi 68,3%, QWK 0,647, CI95 QWK 0,574–0,710) tidak mengandung optimisme pemilihan ambang. Tidak ada uji bersarang untuk ambang, karena tidak ada yang dipilih dari data ini.
+- Harga skema ini: kelas Sangat Tinggi hanya 3 siswa (recall 1 dari 3), kelas Tinggi 35 siswa (recall 45,7%), dan prediksi memampat ke tengah (sebaran prediksi 102 / 166 / 37 / 1). Untuk penandaan operasional dipakai batas 2,50 (38 siswa), bukan 3,25.
+- Skema yang sama dipakai untuk keluaran model dan untuk uji profil 3 × 4, sehingga tidak ada dua skema berbeda; syarat chi-square tetap tidak terpenuhi (lihat bagian Reliabilitas Instrumen).
 - `y_biner` di `features.parquet` tetap memakai 2,5 dan **bukan** kategori yang dilaporkan; ia warisan definisi biner lama dan hanya disimpan untuk kompatibilitas.
 
 ## Asumsi yang Perlu Dikonfirmasi Dosen
 
 - **Label status orang tua.** Kategori 1 berlabel *"kedua orang tua meninggal dunia"* tapi 226 dari 240 siswa kategori tersebut tinggal bersama ayah dan ibu → label kemungkinan salah ketik. Asumsi kerja: kategori 1 = **keluarga utuh**. Kategori 2 (9 siswa, pola mencampur) dan kategori 5 (4 siswa, tanpa label) digabung ke **lainnya**. Sisa kategori 3 & 4 dipakai sesuai label aslinya. 3 versi coding disiapkan untuk sensitivity analysis, namun BELUM dijalankan (fase robustness terpisah).
-- **Ambang `y_biner`.** 2,5 dipilih sebagai titik tengah antara pilihan "kadang-kadang" (2) dan "sering" (3) — siswa dengan rata-rata skor di atasnya masuk label biner cemas tinggi (lihat bagian Kategori yang Dilaporkan untuk kategori tiga tingkat yang dipakai model); ambang alternatif 2,0 dan 2,3 menghasilkan 42,2% dan 25,8% positif — dipakai sebagai bahan diskusi bila dosen ingin prevalensi lebih tinggi.
+- **Ambang `y_biner`.** 2,5 dipilih sebagai titik tengah antara pilihan "kadang-kadang" (2) dan "sering" (3) — siswa dengan rata-rata skor di atasnya masuk label biner cemas tinggi (lihat bagian Kategori yang Dilaporkan untuk kategori empat tingkat yang dipakai model); ambang alternatif 2,0 dan 2,3 menghasilkan 42,2% dan 25,8% positif — dipakai sebagai bahan diskusi bila dosen ingin prevalensi lebih tinggi.
 - **Temuan penting — `f_sosial` berbeda dari analisis sebelumnya.** Rata-rata blok sosial TANPA reverse-scoring adalah **2,15** (angka yang dipakai di analisis deskriptif & regresi lama), sedangkan pipeline kita memakai mean **2,74** setelah `SOSIAL3` di-reverse; korelasinya dengan skor kecemasan berubah dari **+0,536** menjadi **+0,381** (tetap positif, hanya lebih lemah). Item itu berbunyi *"Saya merasa TIDAK tertekan ketika mengalami masalah…"* — arahnya berlawanan, sehingga skor sebelumnya sempat menyamakan "sering tidak tertekan" dengan "tinggi tekanan sosial". Karena faktor sosial menjadi prediktor terkuat di regresi lama (β=0,241), koefisien sosial di regresi pembanding tidak boleh dibandingkan langsung dengan angka lama. Pipeline ini sengaja mengikuti aturan `config.REVERSE_ITEMS`, tetapi lihat peringatan pada SOSIAL3 di atas: data ini berperilaku sebaliknya, jadi arah item menunggu keputusan pembimbing.
 - **Baris duplikat.** Dua baris identik di seluruh kolom tidak dihapus (N tetap 306) agar selaras dengan analisis deskriptif sebelumnya; ditandai saat audit data: row_id 53 dan 55, y = 1,65. Implikasi evaluasi (terukur, bukan perkiraan): pasangan kembar terpisah ke data latih dan data uji pada 10 dari 30 model CV, dan tanpa kedua baris itu MAE CV menjadi 0,2179 bukan 0,2165 — optimisme **0,0013 (0,6%)**.
 
@@ -95,7 +95,7 @@ Angka reliabilitas tidak disimpan di berkas artefak karena dihitung dari data me
 
 - **Cronbach alpha 20 item kecemasan = 0,892.** Ini reliabilitas yang dipakai di laporan §2.3 dan §5.
 - **Standard error of measurement (SEM) = 0,153**, yaitu SD skor (0,467) dikali akar(1 - alpha). Setara dengan sekitar sepertiga simpangan baku.
-- **Jarak ke batas kategori.** Dengan SEM 0,153, siswa yang nilainya dalam ±0,153 dari batas 1,70 atau 2,20 (satu SEM) sebanyak **160 dari 306**; dengan ±0,31 (dua SEM, selang 95%) sebanyak **240 dari 306**. Ini alasan label di dekat batas tidak stabil (§8 laporan). Angka 140 yang muncul bila dipakai ±0,15 bukan SEM (0,153), jadi tidak dipakai.
+- **Jarak ke batas kategori.** Dengan SEM 0,153, siswa yang nilainya dalam ±0,153 dari salah satu batas 1,75 / 2,50 / 3,25 (satu SEM) sebanyak **160 dari 306**; dengan ±0,31 (dua SEM, selang 95%) sebanyak **252 dari 306**. Ini alasan label di dekat batas tidak stabil (§8 laporan). Angka 140 yang muncul bila dipakai ±0,15 bukan SEM (0,153), jadi tidak dipakai.
 - **Blok sosial (3 item).** Alpha 0,259 setelah SOSIAL3 dibalik dan 0,491 dengan nilai mentah; korelasi item-total SOSIAL3 -0,121 setelah dibalik dan +0,121 mentah. Karena itu tafsir faktor sosial ditahan sampai kunci item diputuskan.
 - **Uji profil 3 x 4.** Kolom Sangat Tinggi hanya berisi 3 siswa, sehingga frekuensi harapan di kolom itu sekitar 1 per sel (1,11 / 0,86 / 1,03 untuk tiga profil). Chi-square tidak sah tanpa penggabungan kelas atau uji eksak.
 

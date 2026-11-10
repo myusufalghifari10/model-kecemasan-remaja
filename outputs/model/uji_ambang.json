@@ -1,394 +1,108 @@
 {
-  "versi": "uji_ambang_v2",
-  "masukan": {
-    "prediksi": "outputs/model/oof.csv",
-    "target": "data/features.parquet (y_kontinu)",
-    "n_baris": 306
-  },
-  "grid": {
-    "n_pasangan": 332,
-    "langkah": 0.05,
-    "min_kelas": 20,
-    "terbaik_qwk": {
-      "b1": 1.7,
-      "b2": 2.2,
-      "akurasi": 0.6928104575163399,
-      "qwk": 0.7342465753424657,
-      "meleset_2_tingkat": 1,
-      "n_aktual": [
-        103,
-        115,
-        88
-      ],
-      "n_prediksi": [
-        87,
-        132,
-        87
-      ],
-      "recall": [
-        0.6796116504854369,
-        0.6695652173913044,
-        0.7386363636363636
-      ]
+  "skema": "4 tingkat, ambang tetap dari dokumen analisis sebelumnya",
+  "ambang": [
+    1.75,
+    2.5,
+    3.25
+  ],
+  "label": [
+    "Rendah",
+    "Sedang",
+    "Tinggi",
+    "Sangat Tinggi"
+  ],
+  "aturan_batas": "nilai tepat di batas masuk kategori bawah",
+  "n": 306,
+  "n_aktual": [
+    115,
+    153,
+    35,
+    3
+  ],
+  "n_prediksi": [
+    102,
+    166,
+    37,
+    1
+  ],
+  "cocok_dokumen_sebelumnya": true,
+  "akurasi": 0.683,
+  "qwk": 0.6467,
+  "tepat": 209,
+  "meleset_1_tingkat": 97,
+  "meleset_2_tingkat_atau_lebih": 0,
+  "tabel_silang": {
+    "Rendah": {
+      "Rendah": 80,
+      "Sedang": 35,
+      "Tinggi": 0,
+      "Sangat Tinggi": 0
     },
-    "terbaik_akurasi": {
-      "b1": 1.3,
-      "b2": 1.45,
-      "akurasi": 0.8856209150326797,
-      "qwk": 0.5415397999130057,
-      "meleset_2_tingkat": 9,
-      "n_aktual": [
-        21,
-        21,
-        264
-      ],
-      "n_prediksi": [
-        6,
-        19,
-        281
-      ],
-      "recall": [
-        0.23809523809523808,
-        0.3333333333333333,
-        0.9810606060606061
-      ]
+    "Sedang": {
+      "Rendah": 22,
+      "Sedang": 112,
+      "Tinggi": 19,
+      "Sangat Tinggi": 0
+    },
+    "Tinggi": {
+      "Rendah": 0,
+      "Sedang": 19,
+      "Tinggi": 16,
+      "Sangat Tinggi": 0
+    },
+    "Sangat Tinggi": {
+      "Rendah": 0,
+      "Sedang": 0,
+      "Tinggi": 2,
+      "Sangat Tinggi": 1
     }
   },
-  "acuan_ambang_tetap": {
-    "b1": 1.7,
-    "b2": 2.2,
-    "akurasi": 0.6928104575163399,
-    "qwk": 0.7342465753424657,
-    "meleset_2_tingkat": 1,
-    "n_aktual": [
-      103,
-      115,
-      88
-    ],
-    "n_prediksi": [
-      87,
-      132,
-      87
-    ],
-    "recall": [
-      0.6796116504854369,
-      0.6695652173913044,
-      0.7386363636363636
-    ]
-  },
-  "kandidat": [
+  "per_kategori": [
     {
-      "b1": 1.7,
-      "b2": 2.2,
-      "akurasi": 0.6928104575163399,
-      "qwk": 0.7342465753424657,
-      "meleset_2_tingkat": 1,
-      "n_aktual": [
-        103,
-        115,
-        88
-      ],
-      "n_prediksi": [
-        87,
-        132,
-        87
-      ],
-      "recall": [
-        0.6796116504854369,
-        0.6695652173913044,
-        0.7386363636363636
-      ],
-      "nama": "dipakai"
+      "kategori": "Rendah",
+      "n": 115,
+      "recall": 0.6956521739130435,
+      "bias": -0.0425,
+      "mae": 0.1863
     },
     {
-      "b1": 1.75,
-      "b2": 2.2,
-      "akurasi": 0.673202614379085,
-      "qwk": 0.7277534370750869,
-      "meleset_2_tingkat": 2,
-      "n_aktual": [
-        115,
-        103,
-        88
-      ],
-      "n_prediksi": [
-        102,
-        117,
-        87
-      ],
-      "recall": [
-        0.6956521739130435,
-        0.5922330097087378,
-        0.7386363636363636
-      ],
-      "nama": "pembanding"
+      "kategori": "Sedang",
+      "n": 153,
+      "recall": 0.7320261437908496,
+      "bias": 0.0425,
+      "mae": 0.2061
     },
     {
-      "b1": 1.65,
-      "b2": 2.2,
-      "akurasi": 0.7058823529411765,
-      "qwk": 0.7226802315383266,
-      "meleset_2_tingkat": 1,
-      "n_aktual": [
-        91,
-        127,
-        88
-      ],
-      "n_prediksi": [
-        69,
-        150,
-        87
-      ],
-      "recall": [
-        0.6263736263736264,
-        0.7401574803149606,
-        0.7386363636363636
-      ],
-      "nama": "pembanding"
+      "kategori": "Tinggi",
+      "n": 35,
+      "recall": 0.45714285714285713,
+      "bias": 0.0065,
+      "mae": 0.343
     },
     {
-      "b1": 1.75,
-      "b2": 2.5,
-      "akurasi": 0.6895424836601307,
-      "qwk": 0.6357234154532467,
-      "meleset_2_tingkat": 0,
-      "n_aktual": [
-        115,
-        153,
-        38
-      ],
-      "n_prediksi": [
-        102,
-        166,
-        38
-      ],
-      "recall": [
-        0.6956521739130435,
-        0.7320261437908496,
-        0.5
-      ],
-      "nama": "gabung skema lama"
-    },
-    {
-      "b1": 2.0,
-      "b2": 3.0,
-      "akurasi": 0.7745098039215687,
-      "qwk": 0.5910200286677256,
-      "meleset_2_tingkat": 0,
-      "n_aktual": [
-        185,
-        114,
-        7
-      ],
-      "n_prediksi": [
-        169,
-        135,
-        2
-      ],
-      "recall": [
-        0.7837837837837838,
-        0.7894736842105263,
-        0.2857142857142857
-      ],
-      "nama": "pita sama lebar"
+      "kategori": "Sangat Tinggi",
+      "n": 3,
+      "recall": 0.3333333333333333,
+      "bias": -0.0065,
+      "mae": 0.4329
     }
   ],
-  "bersarang": {
-    "n_lipatan": 30,
-    "inner_folds": 5,
-    "definisi": {
-      "rata_rata_per_lipatan": "QWK rata-rata 30 lipatan; nilai aktual di lipatan uji dikategorikan dengan ambang lipatan itu sendiri",
-      "gabungan_306": "QWK satu tabel 306 siswa; kategori aktual dikunci di 1,70/2,20, prediksi memakai ambang lipatannya",
-      "acuan_model_tunggal_ambang_tetap": "pembanding setara: satu model per lipatan (bukan bag 6 model) dengan ambang tetap"
-    },
-    "rata_rata_per_lipatan": {
-      "akurasi": 0.6529790234443859,
-      "qwk": 0.6789721150615949
-    },
-    "gabungan_306": {
-      "akurasi": 0.6830065359477124,
-      "qwk": 0.725486213375311,
-      "aktual_dikunci_di": [
-        1.7,
-        2.2
-      ]
-    },
-    "acuan_model_tunggal_ambang_tetap": {
-      "b1": 1.7,
-      "b2": 2.2,
-      "akurasi": 0.696078431372549,
-      "qwk": 0.7389217725163973,
-      "meleset_2_tingkat": 1,
-      "n_aktual": [
-        103,
-        115,
-        88
-      ],
-      "n_prediksi": [
-        90,
-        129,
-        87
-      ],
-      "recall": [
-        0.6990291262135923,
-        0.6608695652173913,
-        0.7386363636363636
-      ]
-    },
-    "ambang_tersering": [
-      [
-        [
-          1.8,
-          2.2
-        ],
-        12
-      ],
-      [
-        [
-          1.75,
-          2.2
-        ],
-        5
-      ],
-      [
-        [
-          1.75,
-          2.05
-        ],
-        3
-      ]
-    ],
-    "ambang_terpilih_per_lipatan": [
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.75,
-        2.05
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.7,
-        2.2
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.9,
-        2.25
-      ],
-      [
-        1.75,
-        2.2
-      ],
-      [
-        1.7,
-        2.25
-      ],
-      [
-        1.8,
-        2.05
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.75,
-        2.2
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.7,
-        2.25
-      ],
-      [
-        1.9,
-        2.2
-      ],
-      [
-        1.75,
-        2.05
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.75,
-        2.2
-      ],
-      [
-        1.7,
-        2.25
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.75,
-        2.25
-      ],
-      [
-        1.7,
-        2.05
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.75,
-        2.2
-      ],
-      [
-        1.8,
-        2.2
-      ],
-      [
-        1.75,
-        2.05
-      ],
-      [
-        1.75,
-        2.2
-      ],
-      [
-        1.8,
-        2.25
-      ]
-    ]
+  "n_tepat_di_batas": {
+    "1.75": 12,
+    "2.50": 5,
+    "3.25": 0
   },
-  "pembanding_4_kategori": {
-    "akurasi": 0.6830065359477124,
-    "qwk": 0.6466680951360617,
-    "n_aktual": [
-      115,
-      153,
-      35,
-      3
-    ]
-  }
+  "biner_2_50": {
+    "batas": 2.5,
+    "n_positif": 38,
+    "sensitivitas": 0.5,
+    "spesifisitas": 0.9291,
+    "ppv": 0.5,
+    "npv": 0.9291,
+    "tp": 19,
+    "fp": 19,
+    "fn": 19,
+    "tn": 249
+  },
+  "catatan": "Ambang tidak dicari dari data ini; kecocokan dengan tabel dokumen sebelumnya diperiksa pada skor aktual, bukan pada prediksi."
 }

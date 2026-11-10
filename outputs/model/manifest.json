@@ -10,16 +10,17 @@
         0.23704683964742224
       ],
       "r2": 0.630483826303162,
-      "akurasi_kategori": 0.6928104575163399,
-      "qwk": 0.7342465753424657
+      "akurasi_kategori": 0.6830065359477124,
+      "qwk": 0.6466680951360617
     },
     "produksi": {
       "n_bag": 6,
       "mae_in_sample_bag": 0.12877312794362614,
       "r2_in_sample_bag": 0.8502339779819784,
       "kategori_ambang": [
-        1.7,
-        2.2
+        1.75,
+        2.5,
+        3.25
       ]
     },
     "regresi_9_faktor_protokol_sama": {
@@ -31,8 +32,8 @@
   },
   "berkas": {
     "src/train.py": {
-      "sha256": "b3a876f00013dbd6f6aaf27bf04b4b0233af2aad834d3ef397bf61b6cd9b2d08",
-      "byte": 46543
+      "sha256": "f97b4ed9975587b531b3e8acbe988ec31246cd8777618168db8ec246b7d3d340",
+      "byte": 46244
     },
     "src/config.py": {
       "sha256": "3ea7354496f367d9f4e4ede92325cc73b0524f5a54e48adace17ef5242893546",
@@ -51,56 +52,56 @@
       "byte": 5360
     },
     "src/uji_ambang.py": {
-      "sha256": "15eabe4c874598668432960d955b73b26bd6b3f58ea6821d9ce48ae55ef4dad7",
-      "byte": 11726
+      "sha256": "65a89378da22dd42e1880b4668b6315d36b60243ccf1de6ce69dff4027c24e5e",
+      "byte": 5787
     },
     "src/uji_tambahan.py": {
-      "sha256": "c05d451f934745ef1229e09a1d101404e10804eff1d45a66ade1cfda8b470b05",
-      "byte": 11317
+      "sha256": "7138224d329a0090c44c6a7e450672637fe396faae731499d9df1ff0d77d5fa5",
+      "byte": 11330
     },
     "requirements.txt": {
       "sha256": "b37165828f32dc8e43082f9dcec6c35e0804473d875f28c560d99ff7c0c910ef",
       "byte": 203
     },
     "README.md": {
-      "sha256": "f9e484de8134c9a66a666df2e83a5931fc3f47c0b4ffb56264d300099e1d7c9d",
-      "byte": 14634
+      "sha256": "0bf9b6b8e382a3689e4d29f1c58117131950044c0a55111482bf792cace74558",
+      "byte": 14128
     },
     "docs/codebook.md": {
-      "sha256": "1b488e13093aa429334c765ddbf53d6c5cc813d19c34ac4e00b67643820474d4",
-      "byte": 11432
+      "sha256": "6bbb8bba45f94dd39a65734fb42caacf3311e6bdfcd16bcd1073df27fdb1d3b3",
+      "byte": 10837
     },
     "docs/Laporan-Model-Kecemasan-Remaja.docx": {
-      "sha256": "300102108654183847cdc280c90b5f9055e3edb15218ed8fb93f2c850375f7c1",
-      "byte": 30364
+      "sha256": "130e6673e73194ab6f0dbb60de00ef481d18c62d6c1c7496042a92480d467264",
+      "byte": 29824
     },
     "data/split_v1.json": {
       "sha256": "8baec652ae3c0db30d694b6a67597dc725711593bd404e18b0c01d06fd3910a6",
       "byte": 5700
     },
     "outputs/model/cv.json": {
-      "sha256": "906e4b519e86e4e6d8a68e21a448f228802e72142c95f7600f78f31f6afd1364",
-      "byte": 5012
+      "sha256": "54601ad73931da16c4dcfbc85172ea285493a3791ab58522ff6f71b6eb7eef79",
+      "byte": 5421
     },
     "outputs/model/per_bin.csv": {
       "sha256": "34358322760cb6ba37393e03575040d7cc71cd915fae91eae7fb98d758a46466",
       "byte": 906
     },
     "outputs/model/produksi.json": {
-      "sha256": "7f60153d6e3a8320e0c6076c0e8e5e2aa5b5a6a8e1c1156f64c09964b9d64a9a",
-      "byte": 2900
+      "sha256": "b15a4ba179b9a801ffca75c2b22bd3aecabf5b7febf71ca139a502f184402d00",
+      "byte": 2932
     },
     "outputs/model/perbandingan_regresi.json": {
       "sha256": "d5a73a67037894892578c3ac079e6570437530d394a52553ef14391809c9f5d7",
       "byte": 15666
     },
     "outputs/model/uji_ambang.json": {
-      "sha256": "37097b4a7eb92ee54b52567747e444201f2204c381331a29b149a2206d7cee40",
-      "byte": 6443
+      "sha256": "fb403d33809a5e2eee2433ba738ec7d0c4a41143721d69164a4ade615870c9db",
+      "byte": 1988
     },
     "outputs/model/uji_tambahan.json": {
-      "sha256": "98a975f1a20de9244d6f91763dff4c54a43804cf8f62e7966aaaa49fdc13b76b",
-      "byte": 2506
+      "sha256": "d21eb5654e288481c2783273e11db1d6dd05df2f853fb324f7410ce03c6570de",
+      "byte": 2503
     },
     "outputs/model/model_bag.joblib": {
       "sha256": "8505f91dc55b71d91189559f46cadf533232c423a373945b64b89a865994fb90",

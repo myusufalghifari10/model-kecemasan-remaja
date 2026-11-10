@@ -25,7 +25,7 @@ Mode:
   --mode cv          : CV 5x6 di 306 -> cv.json, oof.csv, per_bin.csv
   --mode test        : latih 238 -> uji 68 -> test_<sha8>.json (tidak dilaporkan)
   --mode final       : BAG 6 model di 306 -> model_bag.joblib + produksi.json
-  --mode predict     : data siswa baru -> skor + kategori (Rendah/Sedang/Tinggi) +
+  --mode predict     : data siswa baru -> skor + kategori (4 tingkat) +
                        fitur paling berpengaruh (SHAP, selalu)
 Tanpa --mode hanya mencetak bantuan (tidak menjalankan apa pun).
 
@@ -93,19 +93,15 @@ PRODUKSI_JSON = OUT_DIR / "produksi.json"
 MODEL_JOBLIB = OUT_DIR / "model_bag.joblib"
 PREDIKSI_CSV = OUT_DIR / "prediksi.csv"
 
-# Tiga kategori kecemasan: Rendah <= 1,70; Sedang 1,70-2,20; Tinggi > 2,20.
-# Ambang dipilih dari grid 2 parameter pada prediksi out-of-fold 306 siswa, dengan
-# kriteria QWK, BUKAN akurasi: memilih demi akurasi menghasilkan skema yang menumpuk
-# hampir semua siswa di satu kelas (264 dari 306 aktual, 281 prediksi; akurasi 0,886
-# tapi QWK 0,54). Nilai terpilih berada di sekitar rata-rata sampel 1,967 +- 0,5
-# simpangan baku 0,467 (tepatnya -0,57 SD dan +0,50 SD). Uji bersarang penuh
-# (ambang dipilih lewat CV 5 lipatan di dalam lipatan latih, model dilatih ulang)
-# memberi QWK gabungan 0,725 dan akurasi 0,683 (rata-rata per lipatan 0,679 / 0,653).
-# Pembanding setaranya satu model per lipatan dengan ambang tetap (0,739), bukan bag
-# enam model (0,734), karena uji bersarang juga memakai satu model per lipatan; jadi
-# harga pemilihan ambang sekitar 0,013 QWK. Dihitung ulang oleh src/uji_ambang.py.
-KATEGORI_AMBANG = (1.70, 2.20)
-KATEGORI_LABEL = ("Rendah", "Sedang", "Tinggi")
+# Empat kategori kecemasan, mengikuti skema dokumen analisis sebelumnya:
+# Rendah <= 1,75; Sedang 1,75-2,50; Tinggi 2,50-3,25; Sangat Tinggi > 3,25.
+# Ambang ini TIDAK dipilih dari data model: ketiganya mereproduksi tabel kategori
+# dokumen sebelumnya (115 / 153 / 35 / 3) secara persis, sehingga bersifat tetap
+# (a priori) dan tidak mengandung optimisme pemilihan ambang. Konsekuensinya kelas
+# Sangat Tinggi hanya berisi 3 siswa, sehingga kelas itu praktis tidak dapat
+# diprediksi; lihat docs/codebook.md dan laporan bagian keterbatasan.
+KATEGORI_AMBANG = (1.75, 2.50, 3.25)
+KATEGORI_LABEL = ("Rendah", "Sedang", "Tinggi", "Sangat Tinggi")
 N_PENJELASAN = 5      # jumlah fitur teratas yang dilaporkan per siswa
 
 DISCLOSURE = {
@@ -419,7 +415,7 @@ def _ci_mae(y: np.ndarray, p: np.ndarray, n_boot: int = N_BOOT, seed: int = SEED
 
 
 def _metrik_kategori(y: np.ndarray, pred: np.ndarray) -> dict:
-    """Akurasi kategori 3 tingkat + tabel silang + rincian per kategori.
+    """Akurasi kategori 4 tingkat + tabel silang + rincian per kategori.
 
     Konvensi tanda `bias` = rata-rata (y - pred), SAMA dengan _per_bin, supaya bias
     positif berarti model menaksir terlalu rendah.
@@ -920,10 +916,11 @@ def _self_test() -> None:
     m2 = latih(params, xs, ys, ws)
     assert np.max(np.abs(pred(m, xs) - pred(m2, xs))) < 1e-12, "model tidak deterministik"
 
-    # (e) batas kategori: 1,70 dan 2,20 milik tingkat BAWAH (Rendah / Sedang)
-    batas = np.array([1.0, 1.70, 1.7001, 2.20, 2.2001, 3.5])
+    # (e) batas kategori: nilai tepat di batas masuk tingkat BAWAH
+    batas = np.array([1.0, 1.75, 1.7501, 2.50, 2.5001, 3.25, 3.2501, 4.0])
     dapat = list(_kategori(batas))
-    harap = ["Rendah", "Rendah", "Sedang", "Sedang", "Tinggi", "Tinggi"]
+    harap = ["Rendah", "Rendah", "Sedang", "Sedang", "Tinggi", "Tinggi",
+             "Sangat Tinggi", "Sangat Tinggi"]
     if dapat != harap:
         _fail(f"batas kategori salah: {dapat} (harus {harap})")
 
@@ -954,7 +951,7 @@ def _self_test() -> None:
         pesan_split = "split terkunci DILEWATI (data/features.parquet tidak ada)"
 
     print("SELF-TEST OK: bentuk base (n,), pred == base + xgb, XGB pada residual, "
-          "bag OOF menutup semua baris, determinisme PLS1, batas kategori 1,70/2,20, "
+          "bag OOF menutup semua baris, determinisme PLS1, batas kategori 1,75/2,50/3,25, "
           "kontribusi fitur menjumlah ke prediksi, target acak tidak dipelajari, "
           + pesan_split)
 

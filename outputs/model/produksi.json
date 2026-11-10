@@ -1,6 +1,6 @@
 {
   "versi": "produksi_v1",
-  "dibuat": "2026-11-02T03:43:56",
+  "dibuat": "2026-11-10T19:33:26",
   "model": {
     "nama": "PLS1 + XGB residual",
     "pls_components": 1,
@@ -42,13 +42,15 @@
   "n_baris": 306,
   "n_fitur": 88,
   "kategori_ambang": [
-    1.7,
-    2.2
+    1.75,
+    2.5,
+    3.25
   ],
   "kategori_label": [
     "Rendah",
     "Sedang",
-    "Tinggi"
+    "Tinggi",
+    "Sangat Tinggi"
   ],
   "mae_cv_bag": 0.2165207355770155,
   "mae_cv_ci95": [
@@ -67,7 +69,7 @@
   },
   "round_trip_selisih_maks": 0.0,
   "versi_paket": {
-    "python": "3.14.7",
+    "python": "3.14.9",
     "numpy": "2.5.3",
     "pandas": "3.0.6",
     "sklearn": "1.9.1",

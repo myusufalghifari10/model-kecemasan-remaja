@@ -4,27 +4,27 @@
   "per_ulangan": [
     {
       "mae": 0.2273,
-      "qwk": 0.7079
+      "qwk": 0.6238
     },
     {
       "mae": 0.2203,
-      "qwk": 0.7255
+      "qwk": 0.6283
     },
     {
       "mae": 0.2242,
-      "qwk": 0.7173
+      "qwk": 0.6178
     },
     {
       "mae": 0.2183,
-      "qwk": 0.7239
+      "qwk": 0.6326
     },
     {
       "mae": 0.2158,
-      "qwk": 0.7294
+      "qwk": 0.654
     },
     {
       "mae": 0.2165,
-      "qwk": 0.7389
+      "qwk": 0.6305
     }
   ],
   "tebak_rata2": {
@@ -34,7 +34,7 @@
     "mae": 0.2165,
     "rmse": 0.2835,
     "r2": 0.6305,
-    "qwk": 0.7342,
+    "qwk": 0.6467,
     "mae_rata2_satu_model": 0.2204,
     "mae_min_satu_model": 0.2158,
     "mae_maks_satu_model": 0.2273,
@@ -61,12 +61,12 @@
       0.237
     ],
     "qwk": [
-      0.6772,
-      0.7861
+      0.5744,
+      0.7096
     ],
     "akurasi": [
-      0.6404,
-      0.7451
+      0.6275,
+      0.732
     ]
   },
   "regresi": {
@@ -104,29 +104,29 @@
   "varian_sosial3": {
     "tanpa_komposisi_f_sosial": {
       "mae": 0.2192,
-      "qwk": 0.7302
+      "qwk": 0.6367
     },
     "tanpa_f_sosial_dan_item": {
       "mae": 0.2229,
-      "qwk": 0.7052
+      "qwk": 0.6324
     },
     "tanpa_pembalikan": {
       "mae": 0.2178,
-      "qwk": 0.7423
+      "qwk": 0.6384
     }
   },
   "varian_orangtua": {
     "tanpa_d_status_ortu": {
       "mae": 0.2162,
       "r2": 0.6295,
-      "qwk": 0.7336,
-      "akurasi": 0.6895
+      "qwk": 0.6377,
+      "akurasi": 0.6732
     },
     "dengan_d_status_ortu": {
       "mae": 0.2165,
       "r2": 0.6305,
-      "qwk": 0.7342,
-      "akurasi": 0.6928
+      "qwk": 0.6467,
+      "akurasi": 0.683
     },
     "catatan": "Tanpa variabel status orang tua, seluruh siswa tetap diikutkan; hanya empat kolom dummy-nya yang dikeluarkan dari fitur."
   }

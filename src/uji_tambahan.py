@@ -37,8 +37,8 @@ ITEM_SOSIAL = ["SOSIAL1", "SOSIAL2", "SOSIAL3"]
 
 
 def kategori(v: np.ndarray) -> np.ndarray:
-    """Tiga tingkat: <=1,70 / 1,70-2,20 / >2,20 (nilai tepat di batas masuk bawah)."""
-    return np.searchsorted([1.70, 2.20], v, side="left")
+    """Empat tingkat: <=1,75 / 1,75-2,50 / 2,50-3,25 / >3,25 (tepat di batas masuk bawah)."""
+    return np.searchsorted([1.75, 2.50, 3.25], v, side="left")
 
 
 def mae(y: np.ndarray, p: np.ndarray) -> float:
